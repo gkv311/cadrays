@@ -10,9 +10,6 @@
 
 #include "Utils.hxx"
 
-#include <OSD_File.hxx>
-#include <OSD_Path.hxx>
-
 #include <DataModel.hxx>
 #include <DataContext.hxx>
 
@@ -22,10 +19,10 @@
 #include "tinyfiledialogs.h"
 #include "IconsFontAwesome.h"
 
+#include <OSD_File.hxx>
+#include <OSD_Path.hxx>
 #include <Prs3d_ShadingAspect.hxx>
-
 #include <ViewerTest_DoubleMapOfInteractiveAndName.hxx>
-#include <ViewerTest_DoubleMapIteratorOfDoubleMapOfInteractiveAndName.hxx>
 
 // Returns AIS context.
 extern Handle (AIS_InteractiveContext)& TheAISContext ();
@@ -56,7 +53,7 @@ MaterialEditor::~MaterialEditor ()
 //=======================================================================
 static float clamp (float theValue, float theMin = 0.f, float theMax = 1.f)
 {
-  return std::min (theMax, std::max (theMin, theValue));
+  return Min (theMax, Max (theMin, theValue));
 }
 
 //=======================================================================
@@ -88,33 +85,27 @@ static void clamp (Graphic3d_Vec4& theVector, float theMin = 0.f, float theMax =
 void MaterialEditor::editFresnel (Graphic3d_BSDF& theBSDF, const bool theIsBase, const int theTypes, const char* theName)
 {
   static std::map<int, std::string> aFresnelMap;
-
   if (aFresnelMap.empty ())
   {
     for (int aTypeID = 0; aTypeID < 16; ++aTypeID)
     {
       aFresnelMap[aTypeID] = "";
-
       if (aTypeID & FT_CONSTANT)
       {
         aFresnelMap[aTypeID] += "Constant" + std::string ("\0", 1);
       }
-
       if (aTypeID & FT_SCHLICK)
       {
         aFresnelMap[aTypeID] += "Fresnel Schlick" + std::string ("\0", 1);
       }
-
       if (aTypeID & FT_CONDUCTOR)
       {
         aFresnelMap[aTypeID] += "Fresnel conductor" + std::string ("\0", 1);
       }
-
       if (aTypeID & FT_DIELECTRIC)
       {
         aFresnelMap[aTypeID] += "Fresnel dielectric" + std::string ("\0", 1);
       }
-
       aFresnelMap[aTypeID].push_back ('\0');
     }
   }
@@ -123,7 +114,6 @@ void MaterialEditor::editFresnel (Graphic3d_BSDF& theBSDF, const bool theIsBase,
                                             : theBSDF.FresnelCoat;
 
   int aSelectedType = 0;
-
   if (theTypes & FT_CONSTANT)
   {
     if (theFresnel.FresnelType () == Graphic3d_FM_CONSTANT)
@@ -169,7 +159,6 @@ void MaterialEditor::editFresnel (Graphic3d_BSDF& theBSDF, const bool theIsBase,
   if (ImGui::Combo (theName, &aSelectedType, aFresnelMap[theTypes].c_str ()))
   {
     int aType = 0;
-
     if (theTypes & FT_CONSTANT)
     {
       if (aType++ == aSelectedType)
@@ -207,7 +196,6 @@ void MaterialEditor::editFresnel (Graphic3d_BSDF& theBSDF, const bool theIsBase,
   myMainGui->AddTooltip ("Type of media interface");
 
   Graphic3d_Vec4 aData = theFresnel.Serialize ();
-
   if (theFresnel.FresnelType () == Graphic3d_FM_SCHLICK)
   {
     if (ImGui::ColorEdit (theIsBase ? "Color##1" : "Color##2", aData.ChangeData ()))
@@ -225,7 +213,6 @@ void MaterialEditor::editFresnel (Graphic3d_BSDF& theBSDF, const bool theIsBase,
     if (ImGui::SliderFloat (theIsBase ? "Weight##1" : "Weight##2", &aData.z (), 0.f, 1.f))
     {
       theFresnel = Graphic3d_Fresnel::CreateConstant (clamp (aData.z (), 0.f, 1.f));
-
       setBSDF (theBSDF);
     }
     myMainGui->AddTooltip ("Constant reflection factor");
@@ -281,7 +268,6 @@ void MaterialEditor::setMaterial (Graphic3d_MaterialAspect& theMaterial)
 void MaterialEditor::setBSDF (Graphic3d_BSDF& theBSDF, const bool theToReset)
 {
   Graphic3d_MaterialAspect aMaterial = myGraphicAspect->FrontMaterial ();
-
   if (theToReset)
   {
     aMaterial.SetMaterialName ("Custom");
@@ -298,24 +284,23 @@ void MaterialEditor::setBSDF (Graphic3d_BSDF& theBSDF, const bool theToReset)
 
   clamp (theBSDF.Absorption);
 
-  theBSDF.Le.r () = std::max (theBSDF.Le.r (), 0.f);
-  theBSDF.Le.g () = std::max (theBSDF.Le.g (), 0.f);
-  theBSDF.Le.b () = std::max (theBSDF.Le.b (), 0.f);
+  theBSDF.Le.r () = Max (theBSDF.Le.r (), 0.f);
+  theBSDF.Le.g () = Max (theBSDF.Le.g (), 0.f);
+  theBSDF.Le.b () = Max (theBSDF.Le.b (), 0.f);
 
-  theBSDF.Absorption.w () = std::max (theBSDF.Absorption.w (), 0.f);
+  theBSDF.Absorption.w () = Max (theBSDF.Absorption.w (), 0.f);
 
   //----------------------------------------------------------------------
   // Normalize base BSDF
   //----------------------------------------------------------------------
 
   float aMaxReflection = 0.f; // get max reflection
-
   for (size_t aK = 0; aK < 3; ++aK)
   {
-    aMaxReflection = std::max (aMaxReflection,
-                               theBSDF.Kd[aK] +
-                               theBSDF.Ks[aK] +
-                               theBSDF.Kt[aK]);
+    aMaxReflection = Max (aMaxReflection,
+                          theBSDF.Kd[aK] +
+                          theBSDF.Ks[aK] +
+                          theBSDF.Kt[aK]);
   }
 
   if (aMaxReflection > 1.f) // need to be normalized
@@ -353,7 +338,6 @@ int getMaterialType (const Graphic3d_BSDF& theBSDF)
   const bool hasKd = IS_NOT_ZERO (theBSDF.Kd);
   const bool hasKs = IS_NOT_ZERO (theBSDF.Ks);
   const bool hasKt = IS_NOT_ZERO (theBSDF.Kt);
-
   if (!hasKc) // single-layered BSDF
   {
     if (!hasKt)
@@ -414,31 +398,25 @@ bool getNonParametrizedNodes (AIS_InteractiveContext* theContext, std::vector<mo
 void synchronizeAspects (AIS_InteractiveContext* theContext)
 {
   model::DataModel* aModel = model::DataModel::GetDefault ();
-
   if (aModel == NULL)
   {
     Standard_ASSERT_INVOKE ("Error! Failed to get default CADRays data model");
   }
 
   Handle (AIS_InteractiveObject) anObject = theContext->FirstSelectedObject ();
-
   if (!GetMapOfAIS ().IsBound1 (anObject))
   {
     Standard_ASSERT_INVOKE ("Error! Failed to get name of the selected object");
   }
 
-  model::DataNode* aNode = NULL;
   model::DataNode* aBase = NULL;
-
-  aNode = model::DataModel::GetDefault ()->Get (GetMapOfAIS ().Find1 (anObject), &aBase).get ();
-
+  model::DataNode* aNode = model::DataModel::GetDefault ()->Get (GetMapOfAIS ().Find1 (anObject), &aBase).get ();
   if (aNode == NULL)
   {
     Standard_ASSERT_INVOKE ("Error! Failed to get node of the selected object");
   }
 
   model::DataNodeArray* aSiblings = NULL;
-
   if (aBase != NULL)
   {
     aSiblings = &aBase->SubNodes ();
@@ -450,11 +428,9 @@ void synchronizeAspects (AIS_InteractiveContext* theContext)
   }
 
   Graphic3d_AspectFillArea3d* aGraphicAspect = model::GetAspect (anObject);
-
   for (size_t aSubID = 0; aSubID < aSiblings->size (); ++aSubID)
   {
     const Handle (AIS_InteractiveObject)& aSibling = (*aSiblings)[aSubID]->Object ();
-
     if (aSibling.IsNull () || model::GetAspect (aSibling) != aGraphicAspect)
     {
       continue;
@@ -485,14 +461,12 @@ float dot3 (const V1& theVector1, const V2& theVector2)
 void MaterialEditor::Draw (const char* theTitle)
 {
   AIS_InteractiveContext* aContext = myMainGui->InteractiveContext ();
-
   if (aContext == NULL)
   {
     Standard_ASSERT_INVOKE ("Error! Failed to get AIS context");
   }
 
   bool toExit = !ImGui::BeginDock (theTitle, &IsVisible, NULL);
-
   if (!toExit)
   {
     aContext->InitSelected ();
@@ -514,7 +488,6 @@ void MaterialEditor::Draw (const char* theTitle)
           if (ImGui::Button (ICON_FA_LINK" Link materials of selected objects", ImVec2 (ImGui::GetContentRegionAvailWidth (), 0)))
           {
             toExit = false;
-
             for (; aContext->MoreSelected (); aContext->NextSelected ())
             {
               model::SetAspect (aContext->SelectedInteractive (), myGraphicAspect);
@@ -547,8 +520,7 @@ void MaterialEditor::Draw (const char* theTitle)
 
   if (ImGui::BeginButtonDropDown ("Material", MaterialGetter::Get (aMaterial.Name ())))
   {
-    int64_t aMatID = 1ll << std::min (aMaterial.Name (), Graphic3d_NOM_DEFAULT);
-
+    int64_t aMatID = 1ll << Min (aMaterial.Name (), Graphic3d_NOM_DEFAULT);
     if (ImGui::Button (ICON_FA_CHAIN_BROKEN" Unlink material", ImVec2 (ImGui::GetContentRegionAvailWidth (), 0)))
     {
       for (aContext->InitSelected (); aContext->MoreSelected (); aContext->NextSelected ())
@@ -573,18 +545,15 @@ void MaterialEditor::Draw (const char* theTitle)
       ImGui::PushID (aButtonID);
       {
         const bool aState = (aMatID & (1ll << aButtonID)) != 0;
-
         if (!aState)
         {
           ImGui::PushStyleColor (ImGuiCol_Button, ImGui::GetStyle ().Colors[ImGuiCol_FrameBg]);
         }
 
         unsigned int aTextureID = myMainGui->GetAppViewer ()->Textures[MaterialGetter::Get (aButtonID)].Texture;
-
         if (ImGui::ImageButton ((ImTextureID )(uintptr_t )aTextureID, ImVec2 (64, 64), ImVec2 (0, 0), ImVec2 (1, 1), 2))
         {
           aMatID = 1ll << aButtonID;
-
           if (aButtonID != Graphic3d_NOM_UserDefined)
           {
             Graphic3d_MaterialAspect anAspect (static_cast<Graphic3d_NameOfMaterial> (aButtonID));
@@ -626,7 +595,6 @@ void MaterialEditor::Draw (const char* theTitle)
     int aMaterialTypeRow2 = -1;
 
     int aMaterialType = getMaterialType (aBSDF);
-
     if (aMaterialType < 3)
     {
       aMaterialTypeRow1 = aMaterialType;
@@ -660,7 +628,6 @@ void MaterialEditor::Draw (const char* theTitle)
     ImGui::Spacing ();
 
     aMaterialType = aMaterialTypeRow1 >= 0 ? aMaterialTypeRow1 : aMaterialTypeRow2 + 3;
-
     switch (aMaterialType)
     {
       case 0: // matte
@@ -668,39 +635,32 @@ void MaterialEditor::Draw (const char* theTitle)
         if (toReset)
         {
           aBSDF = Graphic3d_BSDF::CreateDiffuse (aBSDF.Kd);
-
           if (dot3 (aBSDF.Kd, UNIT) < FLT_EPSILON)
           {
             aBSDF.Kd = Graphic3d_Vec3 (0.8f, 0.8f, 0.8f);
           }
-
           setBSDF (aBSDF, true);
         }
-
         if (ImGui::ColorEdit ("Diffuse", aBSDF.Kd.ChangeData ()))
         {
           setBSDF (aBSDF);
         }
         myMainGui->AddTooltip ("Diffuse reflection color");
+        break;
       }
-      break;
-
       case 1: // metal
       {
         if (toReset)
         {
           aBSDF = Graphic3d_BSDF::CreateMetallic (aBSDF.Ks.rgb (), aBSDF.FresnelBase, aBSDF.Ks.w ());
-
           if (dot3 (aBSDF.Ks, UNIT) < FLT_EPSILON)
           {
             aBSDF.Ks = Graphic3d_Vec4 (UNIT, 0.1f);
           }
-
           if (aBSDF.FresnelBase.FresnelType () == Graphic3d_FM_DIELECTRIC || aBSDF.FresnelBase.FresnelType () == Graphic3d_FM_CONSTANT)
           {
             aBSDF.FresnelBase = Graphic3d_Fresnel::CreateSchlick (Graphic3d_Vec3 (0.8f, 0.8f, 0.8f));
           }
-
           setBSDF (aBSDF, true);
         }
 
@@ -717,17 +677,14 @@ void MaterialEditor::Draw (const char* theTitle)
         myMainGui->AddTooltip ("Controls the blurriness of specular reflection");
 
         editFresnel (aBSDF, true, FT_SCHLICK | FT_CONSTANT | FT_CONDUCTOR | FT_DIELECTRIC, "Interface");
+        break;
       }
-      break;
-
       case 2: // glossy
       {
         if (toReset)
         {
           const Graphic3d_Vec3 aKd = aBSDF.Kd;
-
           aBSDF = Graphic3d_BSDF::CreateMetallic (aBSDF.Ks.rgb (), aBSDF.FresnelBase, aBSDF.Ks.w ());
-
           if (dot3 (aKd, UNIT) > FLT_EPSILON)
           {
             aBSDF.Kd = aKd * 0.5f / aKd.maxComp ();
@@ -738,7 +695,6 @@ void MaterialEditor::Draw (const char* theTitle)
           }
 
           const Graphic3d_Vec3 aKs = aBSDF.Ks.rgb ();
-
           if (dot3 (aKs, UNIT) > FLT_EPSILON)
           {
             const float aScale = 0.5f / aKs.maxComp ();
@@ -779,22 +735,19 @@ void MaterialEditor::Draw (const char* theTitle)
         myMainGui->AddTooltip ("Controls the blurriness of specular reflection");
 
         editFresnel (aBSDF, true, FT_SCHLICK | FT_CONSTANT | FT_CONDUCTOR | FT_DIELECTRIC, "Interface");
+        break;
       }
-      break;
-
       case 3: // glass
       {
         if (toReset)
         {
           float aN = 1.5f; // index of refraction (IOR)
-
           if (aBSDF.FresnelCoat.FresnelType () == Graphic3d_FM_DIELECTRIC)
           {
             aN = aBSDF.FresnelCoat.Serialize ().y ();
           }
 
           aBSDF = Graphic3d_BSDF::CreateGlass (aBSDF.Kt, aBSDF.Absorption.rgb (), aBSDF.Absorption.w (), aN);
-
           if (dot3 (aBSDF.Kt, UNIT) < FLT_EPSILON)
           {
             aBSDF.Kt = UNIT;
@@ -827,9 +780,8 @@ void MaterialEditor::Draw (const char* theTitle)
         myMainGui->AddTooltip ("Absorption coefficient in the Beer-Lambert law");
 
         editFresnel (aBSDF, false, FT_CONSTANT | FT_DIELECTRIC, "Interface");
+        break;
       }
-      break;
-
       case 4: // paint
       {
         if (toReset)
@@ -839,7 +791,6 @@ void MaterialEditor::Draw (const char* theTitle)
           const Graphic3d_Vec4 aKc = aBSDF.Kc;
 
           aBSDF = Graphic3d_BSDF::CreateMetallic (aKs.rgb (), aBSDF.FresnelBase, aKs.w ());
-
           if (dot3 (aKd, UNIT) > FLT_EPSILON)
           {
             aBSDF.Kd = aKd * 0.5f / aKd.maxComp ();
@@ -940,15 +891,13 @@ void MaterialEditor::Draw (const char* theTitle)
         {
           ImGui::Unindent (3.f);
         }
+        break;
       }
-      break;
-
       default: // custom
       {
         if (toReset) // set fictive BRDFs to make it custom
         {
           aBSDF = aMaterial.BSDF ();
-
           if (!IS_NOT_ZERO (aBSDF.Kc))
           {
             aBSDF.Kc = Graphic3d_Vec4 (FLT_SMALL,
@@ -1051,6 +1000,7 @@ void MaterialEditor::Draw (const char* theTitle)
         {
           ImGui::Unindent (3.f);
         }
+        break;
       }
     }
 
@@ -1065,8 +1015,7 @@ void MaterialEditor::Draw (const char* theTitle)
   {
     ImGui::Spacing ();
     
-    float aPower = std::max (aBSDF.Le.maxComp (), 1.f);
-
+    float aPower = Max (aBSDF.Le.maxComp (), 1.f);
     if (aPower > 1.f)
     {
       aBSDF.Le /= aPower;
@@ -1075,7 +1024,6 @@ void MaterialEditor::Draw (const char* theTitle)
     if (ImGui::ColorEdit ("Color##Emission", aBSDF.Le.ChangeData ()))
     {
       aBSDF.Le *= aPower; // scale to actual power
-
       setBSDF (aBSDF);
     }
     myMainGui->AddTooltip ("Spectrum of emitted radiance");
@@ -1085,7 +1033,6 @@ void MaterialEditor::Draw (const char* theTitle)
       if (aPower > 1.f)
       {
         aBSDF.Le *= aPower; // scale to actual power
-
         setBSDF (aBSDF);
       }
     }
@@ -1106,16 +1053,9 @@ void MaterialEditor::Draw (const char* theTitle)
     {
       TCollection_AsciiString aFileName;
 
-      const char* aFilters[] = { "*.bmp",
-                                 "*.png",
-                                 "*.gif",
-                                 "*.tga",
-                                 "*.jpg",
-                                 "*.jpeg",
-                                 "*.tiff" };
+      const char* aFilters[] = { "*.bmp", "*.png", "*.gif", "*.tga", "*.jpg", "*.jpeg", "*.tiff" };
 
       const char* aResult = tinyfd_openFileDialog ("Open image", "", 7, aFilters, "Image files", 0);
-
       if (aResult != NULL)
       {
         aFileName = TCollection_AsciiString (aResult);
@@ -1132,7 +1072,6 @@ void MaterialEditor::Draw (const char* theTitle)
     if (aTexture.IsNull ())
     {
       TCollection_AsciiString aFileName; // full path of image to load
-
       if (ImGui::Button (ICON_FA_PLUS" Add", ImVec2 (ImGui::GetContentRegionAvailWidth (), 0.f)))
       {
         aFileName = FileDialog::getFile ();
@@ -1141,7 +1080,6 @@ void MaterialEditor::Draw (const char* theTitle)
       if (!aFileName.IsEmpty ())
       {
         std::vector<model::DataNode*> aNonParametrized;
-
         if (getNonParametrizedNodes (myMainGui->InteractiveContext (), aNonParametrized))
         {
           for (size_t aNodeID = 0; aNodeID < aNonParametrized.size (); ++aNodeID)
@@ -1163,11 +1101,9 @@ void MaterialEditor::Draw (const char* theTitle)
         }
 
         Handle (Graphic3d_TextureMap) aTextureMap = model::DataModel::GetDefault ()->Manager ()->PickTexture (aFileName);
-
         if (!aTextureMap.IsNull ())
         {
           myGraphicAspect->SetTextureMap (aTextureMap);
-
           if (!myGraphicAspect->TextureMapState ())
           {
             myGraphicAspect->SetTextureMapOn (); // enable texture mapping if needed
@@ -1180,7 +1116,6 @@ void MaterialEditor::Draw (const char* theTitle)
     else // already has texture
     {
       std::vector<model::DataNode*> aNonParametrized;
-
       if (getNonParametrizedNodes (myMainGui->InteractiveContext (), aNonParametrized))
       {
         if (ImGui::Button (ICON_FA_COG" Parametrize selected shapes", ImVec2 (ImGui::GetContentRegionAvailWidth (), 0.f)))
@@ -1216,7 +1151,6 @@ void MaterialEditor::Draw (const char* theTitle)
           if (!aFileName.IsEmpty ())
           {
             Handle (Graphic3d_TextureMap) aTextureMap = model::DataModel::GetDefault ()->Manager ()->PickTexture (aFileName);
-
             if (!aTextureMap.IsNull ())
             {
               myGraphicAspect->SetTextureMap (aTextureMap);
@@ -1238,7 +1172,6 @@ void MaterialEditor::Draw (const char* theTitle)
       if (!toKeepMap) // texture should be removed
       {
         myGraphicAspect->SetTextureMap (NULL);
-
         if (myGraphicAspect->ToMapTexture ())
         {
           myGraphicAspect->SetTextureMapOff ();

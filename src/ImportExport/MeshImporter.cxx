@@ -10,6 +10,12 @@
 
 #include "AisMesh.hxx"
 
+#include <Standard_WarningsDisable.hxx>
+  #include <assimp/scene.h>
+  #include <assimp/Importer.hpp>
+  #include <assimp/postprocess.h>
+#include <Standard_WarningsRestore.hxx>
+
 #include <OSD_File.hxx>
 #include <OSD_Path.hxx>
 
@@ -97,7 +103,6 @@ namespace mesh
     }
 
     Assimp::Importer anImporter;
-
     if (anImporter.ReadFile (theFileName.ToCString (), aLoadParams) == NULL)
     {
       throw std::runtime_error ("ASSIMP failed to import mesh file");

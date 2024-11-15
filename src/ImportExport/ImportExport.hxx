@@ -11,8 +11,9 @@
 #ifndef _ImportExport_HeaderFile
 #define _ImportExport_HeaderFile
 
+#include "DataModel.hxx"
+
 #include <V3d_View.hxx>
-#include <DataModel.hxx>
 
 namespace ie
 {

@@ -8,12 +8,10 @@
 // refer to file LICENSE.txt for complete text of the license and disclaimer of 
 // any warranty.
 
+#include "TextureManager.hxx"
+
 #include <OSD_File.hxx>
 #include <OSD_Path.hxx>
-
-#include <Graphic3d_Texture2Dmanual.hxx>
-
-#include "TextureManager.hxx"
 
 namespace model
 {
@@ -120,7 +118,7 @@ namespace model
         return NULL;
       }
 
-      myTextures.Bind (aFileName, new Graphic3d_Texture2Dmanual (aFileName));
+      myTextures.Bind (aFileName, new Graphic3d_Texture2D (aFileName));
     }
 
     return myTextures.Find (aFileName);

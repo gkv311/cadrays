@@ -10,11 +10,11 @@
 
 #include "OrbitControls.h"
 
-#include <algorithm>
-
 #include <gp_Quaternion.hxx>
 #include <gp_Ax1.hxx>
 #include <gp_Ax3.hxx>
+
+#include <algorithm>
 
 enum OrbitControls_State
 {
@@ -33,8 +33,6 @@ struct OrbitControls_Internal
     : Camera (theCamera),
       ScreenWidth (theScreenWidth),
       ScreenHeight (theScreenHeight),
-      Enabled (true),
-      State (OCS_NONE),
       RotateStartPos (0, 0),
       MouseLastPos (0, 0)
   {}
@@ -42,12 +40,12 @@ struct OrbitControls_Internal
   // Reference to camera.
   Handle (Graphic3d_Camera) Camera;
 
-  int ScreenWidth;
-  int ScreenHeight;
+  int ScreenWidth = 0;
+  int ScreenHeight = 0;
 
-  bool Enabled;
+  bool Enabled = true;
 
-  OrbitControls_State State;
+  OrbitControls_State State = OCS_NONE;
 
   Graphic3d_Vec2i RotateStartPos;
   Graphic3d_Vec2i MouseLastPos;

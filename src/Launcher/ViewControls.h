@@ -65,7 +65,7 @@ public:
 
   Standard_EXPORT virtual bool IsWalkthough() const = 0;
 
-  Standard_EXPORT virtual void RegisterKey (ViewControls_Key theKey, int theExternalKey)
+  virtual void RegisterKey (ViewControls_Key theKey, int theExternalKey)
   {
     myMappedKeys[theKey] = theExternalKey;
   }

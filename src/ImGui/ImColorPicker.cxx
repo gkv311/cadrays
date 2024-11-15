@@ -104,11 +104,11 @@ namespace ImGui
           ImGui::PushItemWidth((alpha ? bar1_pos_x : bar0_pos_x) + bars_width - picker_pos.x);
           ImGuiColorEditFlags sub_flags = (alpha ? ImGuiColorEditFlags_Alpha : 0) | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoOptions | ImGuiColorEditFlags_NoColorSquare;
           if (flags & ImGuiColorEditFlags_RGB)
-              value_changed |= ImGui::ColorEdit4("##rgb", col, sub_flags | ImGuiColorEditFlags_RGB);
+              value_changed |= ImGui::ColorEdit4("##rgb", col, (sub_flags | ImGuiColorEditFlags_RGB) != 0);
           if (flags & ImGuiColorEditFlags_HSV)
-              value_changed |= ImGui::ColorEdit4("##hsv", col, sub_flags | ImGuiColorEditFlags_HSV);
+              value_changed |= ImGui::ColorEdit4("##hsv", col, (sub_flags | ImGuiColorEditFlags_HSV) != 0);
           if (flags & ImGuiColorEditFlags_HEX)
-              value_changed |= ImGui::ColorEdit4("##hex", col, sub_flags | ImGuiColorEditFlags_HEX);
+              value_changed |= ImGui::ColorEdit4("##hex", col, (sub_flags | ImGuiColorEditFlags_HEX) != 0);
           ImGui::PopItemWidth();
       }
 

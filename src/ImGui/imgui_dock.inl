@@ -1108,7 +1108,7 @@ struct DockContext
 
         int i = getDockIndex (theDock);
 
-        if (TreeNode((void*)i, "Dock %d (%s)", i, m_docks[i]->label)) {
+        if (TreeNode((void*)intptr_t(i), "Dock %d (%s)", i, m_docks[i]->label)) {
             Dock &dock = *theDock;
             ImVec4 aGrayCol (0.6f, 0.6f, 0.6f, 1.f);
             TextColored(aGrayCol, "pos=(%.1f %.1f) size=(%.1f %.1f)", 

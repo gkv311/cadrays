@@ -13,14 +13,13 @@
 
 #include "TextureManager.hxx"
 
+#include <AIS_InteractiveObject.hxx>
+
+// Assimp forward declarations
+struct aiScene;
+
 #include <vector>
 #include <memory>
-
-#include <assimp/scene.h>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-
-#include <AIS_InteractiveObject.hxx>
 
 namespace mesh
 {
@@ -88,7 +87,7 @@ namespace mesh
     Flipper myFlipper;
 
     //! Root structure of imported data.
-    std::unique_ptr<aiScene> myScene;
+    std::shared_ptr<aiScene> myScene;
 
     //! Root directory with a mesh file.
     TCollection_AsciiString myDirectory;

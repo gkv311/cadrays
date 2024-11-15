@@ -11,7 +11,7 @@
 #ifndef _RT_DataNode_HeaderFile
 #define _RT_DataNode_HeaderFile
 
-#include <AisMesh.hxx>
+#include "AisMesh.hxx"
 
 namespace model
 {
@@ -61,34 +61,19 @@ namespace model
   public: //! @name node information
 
     //! Returns type of data node.
-    NodeType Type () const
-    {
-      return myType;
-    }
+    NodeType Type () const { return myType; }
 
     //! Returns array of descendants.
-    std::vector<DataNodePtr>& SubNodes ()
-    {
-      return mySubNodes;
-    }
+    std::vector<DataNodePtr>& SubNodes () { return mySubNodes; }
 
     //! Returns array of descendants.
-    const std::vector<DataNodePtr>& SubNodes () const
-    {
-      return mySubNodes;
-    }
+    const std::vector<DataNodePtr>& SubNodes () const { return mySubNodes; }
 
     //! Returns referenced AIS object.
-    const Handle (AIS_InteractiveObject)& Object () const
-    {
-      return myObject;
-    }
+    const Handle (AIS_InteractiveObject)& Object () const { return myObject; }
 
     //! Returns name of data node.
-    const TCollection_AsciiString& Name () const
-    {
-      return myName;
-    }
+    const TCollection_AsciiString& Name () const { return myName; }
 
     //! Sets name of data node (optionally with child nodes).
     Standard_EXPORT void SetName (const TCollection_AsciiString& theName, const bool theRecursive = true);
@@ -147,17 +132,10 @@ namespace model
 
   protected:
 
-    //! Type of data node.
-    NodeType myType;
-
-    //! Name of data node.
-    TCollection_AsciiString myName;
-
-    //! Array of descendants.
-    std::vector<DataNodePtr> mySubNodes;
-
-    //! Referenced AIS object.
-    Handle (AIS_InteractiveObject) myObject;
+    NodeType                       myType;     //!< Type of data node
+    TCollection_AsciiString        myName;     //!< Name of data node
+    std::vector<DataNodePtr>       mySubNodes; //!< Array of descendants
+    Handle (AIS_InteractiveObject) myObject;   //!< Referenced AIS object
 
   };
 

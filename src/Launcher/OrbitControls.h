@@ -11,7 +11,7 @@
 #ifndef OrbitControls_HeaderFile
 #define OrbitControls_HeaderFile
 
-#include <ViewControls.h>
+#include "ViewControls.h"
 
 #include <Graphic3d_Camera.hxx>
 
@@ -44,7 +44,7 @@ public:
   Standard_EXPORT virtual void OnKeyDown (const int theKey);
   Standard_EXPORT virtual void OnKeyUp (const int theKey);
 
-  Standard_EXPORT virtual bool IsWalkthough() const
+  virtual bool IsWalkthough() const
   {
     return false;
   }
@@ -52,7 +52,7 @@ public:
 private:
 
   //! Object containing internal implementation details of viewer.
-  OrbitControls_Internal* myInternal;
+  OrbitControls_Internal* myInternal = nullptr;
 };
 
 #endif // OrbitControls_HeaderFile

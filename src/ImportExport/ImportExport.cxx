@@ -8,25 +8,21 @@
 // refer to file LICENSE.txt for complete text of the license and disclaimer of 
 // any warranty.
 
-#include <OSD_Path.hxx>
-#include <OSD_File.hxx>
-#include <OSD_Directory.hxx>
-#include <OSD_Protection.hxx>
+#include "ImportExport.hxx"
+
+#include "Utils.hxx"
+#include "AisMesh.hxx"
 
 #include <BRepTools.hxx>
 #include <gp_Quaternion.hxx>
-
+#include <OSD_Directory.hxx>
+#include <OSD_File.hxx>
+#include <OSD_Path.hxx>
+#include <OSD_Protection.hxx>
 #include <V3d_Light.hxx>
 #include <V3d_SpotLight.hxx>
 #include <V3d_PositionalLight.hxx>
 #include <V3d_DirectionalLight.hxx>
-
-#include <Quantity_Parameter.hxx>
-
-#include <Utils.hxx>
-#include <AisMesh.hxx>
-
-#include "ImportExport.hxx"
 
 namespace ie
 {
@@ -46,11 +42,9 @@ namespace ie
   void ImportExport::storeDataNode (model::DataNode* theNode, const TCollection_AsciiString& thePath)
   {
     OSD_Directory aDirectory (thePath);
-
     if (!aDirectory.Exists ())
     {
       aDirectory.Build (OSD_Protection ());
-
       if (!aDirectory.Exists ())
       {
         Standard_ASSERT_INVOKE ("Error! Failed to create output folder");
@@ -67,11 +61,9 @@ namespace ie
     else
     {
       Handle (AIS_Shape) aShape = Handle (AIS_Shape)::DownCast (theNode->Object ());
-
       if (!aShape.IsNull ())
       {
         TCollection_AsciiString aShapeName = thePath + "/" + theNode->Name () + ".brep";
-
         if (!BRepTools::Write (aShape->Shape (), aShapeName.ToCString ()))
         {
           Standard_ASSERT_INVOKE ("Error! Failed to export shape to BREP");
@@ -82,7 +74,6 @@ namespace ie
       else
       {
         Handle (mesh::AisMesh) aMesh = Handle (mesh::AisMesh)::DownCast (theNode->Object ());
-
         if (!aMesh.IsNull ())
         {
           TCollection_AsciiString aMeshName = thePath + "/" + theNode->Name () + ".ply";
@@ -108,11 +99,9 @@ namespace ie
     if (!theNode->SubNodes ().empty ())
     {
       TCollection_AsciiString aSubNodeNames; // collected node names
-
       for (auto aSubIter = theNode->SubNodes ().begin(); aSubIter != theNode->SubNodes ().end (); ++aSubIter)
       {
         model::DataNode* aSubNode = aSubIter->get ();
-
         if (!aSubNode->SubNodes ().empty ())
         {
           groupSubNodes (aSubNode); // group child hierarchy
@@ -146,7 +135,6 @@ namespace ie
       myStream << "\n" << "# Setup object \'" << theNode->Name () << "\'\n";
 
       Handle (AIS_InteractiveObject) anObject = theNode->Object ();
-
       if (anObject.IsNull ())
       {
         Standard_ASSERT_INVOKE ("Error! AIS interactive shape is NULL");
@@ -155,13 +143,12 @@ namespace ie
       myStream << "vdisplay " << theNode->Name() << " -noupdate\n";
 
       const int aMatIndex = model::GetAspect (anObject)->FrontMaterial().Name ();
-
       if (aMatIndex < Graphic3d_MaterialAspect::NumberOfMaterials ())
       {
         myStream << "vsetmaterial " << theNode->Name () << " " << Graphic3d_MaterialAspect::MaterialName (aMatIndex + 1) << " -noupdate\n";
       }
 
-      Graphic3d_BSDF aBSDF = model::GetAspect (anObject)->FrontMaterial ().BSDF ();
+      const Graphic3d_BSDF aBSDF = model::GetAspect (anObject)->FrontMaterial ().BSDF ();
 
       myStream << "vbsdf " << theNode->Name () << " -Kc " << aBSDF.Kc.x () << " "
                                                           << aBSDF.Kc.y () << " "
@@ -198,7 +185,6 @@ namespace ie
                                                : aBSDF.FresnelCoat.Serialize ();
 
         const std::string aFresnelName = aLayer ? " -baseFresnel " : " -coatFresnel ";
-
         switch ((aLayer ? aBSDF.FresnelBase : aBSDF.FresnelCoat).FresnelType ())
         {
           case Graphic3d_FM_SCHLICK:
@@ -206,43 +192,37 @@ namespace ie
             myStream << "vbsdf " << theNode->Name () << aFresnelName << "Schlick " << aFresnel.r () << " "
                                                                                    << aFresnel.g () << " "
                                                                                    << aFresnel.b () << " -noupdate\n";
+            break;
           }
-          break;
-
           case Graphic3d_FM_CONSTANT:
           {
             myStream << "vbsdf " << theNode->Name () << aFresnelName << "Constant " << aFresnel.z () << " -noupdate\n";
+            break;
           }
-          break;
-
           case Graphic3d_FM_CONDUCTOR:
           {
             myStream << "vbsdf " << theNode->Name () << aFresnelName << "Conductor " << aFresnel.y () << " "
                                                                                      << aFresnel.z () << " -noupdate\n";
+            break;
           }
-          break;
-
           case Graphic3d_FM_DIELECTRIC:
           {
             myStream << "vbsdf " << theNode->Name () << aFresnelName << "Dielectric " << aFresnel.y () << " -noupdate\n";
+            break;
           }
-          break;
         }
       }
 
-      Handle (Graphic3d_TextureRoot) aTexMap = Handle (Graphic3d_TextureRoot)::DownCast (model::GetAspect (anObject)->TextureMap ());
-
+      Handle (Graphic3d_TextureRoot) aTexMap = model::GetAspect (anObject)->TextureMap ();
       if (!aTexMap.IsNull ()) // handle texture attached
       {
         const TCollection_AsciiString aName = model::DataModel::GetDefault ()->Manager ()->RegisterName (aTexMap->Path ());
 
         double aScaleS = 1.0;
         double aScaleT = 1.0;
-
         if (anObject->IsKind (STANDARD_TYPE (AIS_TexturedShape)))
         {
           Handle (AIS_TexturedShape) aTexShape = Handle (AIS_TexturedShape)::DownCast (anObject);
-
           if (aTexShape->TextureScale ())
           {
             aScaleS = aTexShape->TextureScaleU ();
@@ -255,9 +235,7 @@ namespace ie
           // Here we should synchronize DRAW with our data model
           // since we can apply rt* commands only for data nodes
           myStream << "rtmodel -sync default" << "\n";
-
           myStream << "rttexture " << theNode->Name () << " \"$Root/textures/" << aName << "\"\n";
-
           if (aScaleS != 1.0
            || aScaleT != 1.0)
           {
@@ -274,7 +252,6 @@ namespace ie
       }
 
       const gp_Quaternion aQuat = anObject->LocalTransformation ().GetRotation ();
-
       if (aQuat.X () != 0.0
        || aQuat.Y () != 0.0
        || aQuat.Z () != 0.0
@@ -287,14 +264,12 @@ namespace ie
       }
 
       const double aScale = anObject->LocalTransformation ().ScaleFactor ();
-
       if (aScale != 1.0)
       {
         myStream << "vlocation " << theNode->Name () << " -scale " << aScale << "\n";
       }
 
       const gp_XYZ aTranslation = anObject->LocalTransformation ().TranslationPart ();
-
       if (aTranslation.X () != 0.0
        || aTranslation.Y () != 0.0
        || aTranslation.Z () != 0.0)
@@ -589,10 +564,9 @@ namespace ie
 
         if (!myDrawCompatible)
         {
-          Quantity_Parameter aColorR;
-          Quantity_Parameter aColorG;
-          Quantity_Parameter aColorB;
-
+          double aColorR = 0.0;
+          double aColorG = 0.0;
+          double aColorB = 0.0;
           aLight->Color ().Values (aColorR, aColorG, aColorB, Quantity_TOC_RGB);
 
           const TCollection_AsciiString aColor = TCollection_AsciiString (aColorR) + " "

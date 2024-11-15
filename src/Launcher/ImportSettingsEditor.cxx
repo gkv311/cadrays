@@ -8,23 +8,20 @@
 // refer to file LICENSE.txt for complete text of the license and disclaimer of 
 // any warranty.
 
+#include "ImportSettingsEditor.hxx"
+
 #include <DBRep.hxx>
 #include <OSD_Path.hxx>
 #include <OSD_File.hxx>
 #include <TopoDS_Shape.hxx>
 
-#include <ImportSettingsEditor.hxx>
-
 //=======================================================================
 //function : ImportSettingsEditor
 //purpose  : 
 //=======================================================================
-ImportSettingsEditor::ImportSettingsEditor () : myToGroupObjects (true),
-                                                myToGenSmoothNrm (false),
-                                                myToPreTransform (false),
-                                                myVerticalDirect (2)
+ImportSettingsEditor::ImportSettingsEditor ()
 {
-  myToSetNameFocus = false;
+  //
 }
 
 //=======================================================================
@@ -167,32 +164,26 @@ bool ImportSettingsEditor::CheckNameValid ()
 void ImportSettingsEditor::Draw (const char* /*theTitle*/)
 {
   TCollection_AsciiString aFileExt = OSD_Path (myFileName).Extension ();
-
   aFileExt.UpperCase (); // convert extension to lower case
-
   if (myToSetNameFocus)
   {
     ImGui::SetKeyboardFocusHere (0);
     myToSetNameFocus = false;
   }
 
-  char aDrawName[256] = "";
-
+  char aDrawName[256] = {};
   if (aFileExt != ".TCL")
   {
     strncpy (aDrawName, myDrawName.ToCString (), 256);
-
     if (ImGui::InputText ("Name", aDrawName, 256, ImGuiInputTextFlags_CharsNoBlank))
     {
       myDrawName = aDrawName;
     }
-
     myMainGui->AddTooltip ("Name to be used in data model (alphanumeric sequence starting with a letter)");
   }
   else
   {
     ImGui::TextUnformatted ("Scene content will be overwritten");
-
     ImGui::Spacing();
   }
 
@@ -207,7 +198,6 @@ void ImportSettingsEditor::Draw (const char* /*theTitle*/)
     ImGui::Spacing ();
 
     TCollection_AsciiString aText = aFileExt + " settings";
-
     if (aFileExt == ".DXF" || aFileExt == ".BLEND" || aFileExt == ".FBX")
     {
       aText += " - EXPERIMENTAL";
@@ -227,17 +217,14 @@ void ImportSettingsEditor::Draw (const char* /*theTitle*/)
       if (CheckNameValid ())
       {
         TCollection_AsciiString aLoadCommand = TCollection_AsciiString ("rtmeshread") + " \"" + myFileName + "\" " + myDrawName;
-
         if (myToGroupObjects)
         {
           aLoadCommand += " -group";
         }
-
         if (myToPreTransform)
         {
           aLoadCommand += " -pretrans";
         }
-
         if (myToGenSmoothNrm)
         {
           aLoadCommand += " -gensmooth";
@@ -286,7 +273,6 @@ void ImportSettingsEditor::Draw (const char* /*theTitle*/)
   else
   {
     const TCollection_AsciiString aShowCommand = TCollection_AsciiString ("vdisplay ") + myDrawName + " -noupdate\n" + "vfit";
-
     if (aFileExt == ".BREP")
     {
       DrawTransform ();

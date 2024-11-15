@@ -8,20 +8,26 @@
 // refer to file LICENSE.txt for complete text of the license and disclaimer of 
 // any warranty.
 
-#include <set>
-#include <map>
+#include "AisMesh.hxx"
 
-#include <assimp/IOSystem.hpp>
-#include <assimp/Exporter.hpp>
+#include "DataModel.hxx"
 
-#include <AisMesh.hxx>
-#include <DataModel.hxx>
+#include <Standard_WarningsDisable.hxx>
+  #include <assimp/IOSystem.hpp>
+  #include <assimp/Exporter.hpp>
+  #include <assimp/scene.h>
+  //#include <assimp/Importer.hpp>
+  //#include <assimp/postprocess.h>
+#include <Standard_WarningsRestore.hxx>
 
 #include <Graphic3d_ArrayOfPolylines.hxx>
 #include <Graphic3d_ArrayOfTriangles.hxx>
-
+#include <Graphic3d_AspectLine3d.hxx>
 #include <Select3D_SensitiveBox.hxx>
 #include <Select3D_SensitivePrimitiveArray.hxx>
+
+#include <set>
+#include <map>
 
 // Use this macro to print debug info.
 #define PRINT_DEBUG_INFO
@@ -44,19 +50,15 @@ namespace mesh
   TCollection_AsciiString AisMesh::Name () const
   {
     TCollection_AsciiString aName;
-
     for (aiMesh** aMesh = myRange.first; aMesh != myRange.second && aName.IsEmpty(); ++aMesh)
     {
       if ((*aMesh)->mName.length != 0)
       {
         aName = (*aMesh)->mName.C_Str ();
-
-        // We need to remove all space characters
-        // in order to use this ID as a DRAW name
+        // We need to remove all space characters in order to use this ID as a DRAW name
         aName.RemoveAll (' ', Standard_False);
       }
     }
-
     return aName;
   }
 
@@ -130,13 +132,11 @@ namespace mesh
 
     float aMinPnt[] = {  FLT_MAX,  FLT_MAX,  FLT_MAX };
     float aMaxPnt[] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-
     for (aiMesh** aMesh = myRange.first; aMesh != myRange.second; ++aMesh)
     {
       for (size_t aVrtID = 0; aVrtID < (*aMesh)->mNumVertices; ++aVrtID)
       {
         aiVector3D aVertex = (*aMesh)->mVertices[aVrtID];
-
         for (int aDim = 0; aDim < 3; ++aDim)
         {
           aMinPnt[aDim] = std::min (aMinPnt[aDim], aVertex[aDim]);
@@ -147,7 +147,6 @@ namespace mesh
 
     myMeshBounds.Update (aMinPnt[0], aMinPnt[1], aMinPnt[2],
                          aMaxPnt[0], aMaxPnt[1], aMaxPnt[2]);
-
     return myMeshBounds;
   }
 
@@ -158,16 +157,13 @@ namespace mesh
   void AisMesh::ComputeSelection (const Handle (SelectMgr_Selection)& theSelection, const int /*theMode*/)
   {
     Handle (SelectMgr_EntityOwner) anOwner = new SelectMgr_EntityOwner (this);
-
     if (!myMeshes.IsNull ())
     {
       Handle (Select3D_SensitivePrimitiveArray) aSensitiveSet = new Select3D_SensitivePrimitiveArray (anOwner);
 
       // Reuse generated triangulation data
       // in order to perform mesh selection
-      aSensitiveSet->InitTriangulation (
-        myMeshes->Attributes (), myMeshes->Indices (), TopLoc_Location ());
-
+      aSensitiveSet->InitTriangulation (myMeshes->Attributes (), myMeshes->Indices (), TopLoc_Location ());
       theSelection->Add (aSensitiveSet);
     }
   }
@@ -184,40 +180,36 @@ namespace mesh
   //function : Compute
   //purpose  :
   //===========================================================================
-  void AisMesh::Compute (const Handle (PrsMgr_PresentationManager3d)& /*theMgr*/, const Handle (Prs3d_Presentation)& thePrs, const int theMode)
+  void AisMesh::Compute (const Handle (PrsMgr_PresentationManager)& , const Handle (Prs3d_Presentation)& thePrs, const int theMode)
   {
     if (theMode == DM_BBox)
     {
-      Handle (Graphic3d_Group) aGroup = Prs3d_Root::CurrentGroup (thePrs);
-
       if (getBoundingBox ().IsVoid ())
       {
         return;
       }
 
+      Handle (Graphic3d_Group) aGroup = thePrs->NewGroup();
       aGroup->SetGroupPrimitivesAspect (new Graphic3d_AspectLine3d (Quantity_Color (Quantity_NOC_WHITE), Aspect_TOL_SOLID, 1.0));
 
-      double aX[2];
-      double aY[2];
-      double aZ[2];
-
+      double aX[2] = {};
+      double aY[2] = {};
+      double aZ[2] = {};
       myMeshBounds.Get (aX[0], aY[0], aZ[0],
                         aX[1], aY[1], aZ[1]);
 
       Handle (Graphic3d_ArrayOfPolylines) aPolyline = new Graphic3d_ArrayOfPolylines (16);
-
       for (int aVrtID = 0; aVrtID < 16; ++aVrtID)
       {
         aPolyline->AddVertex (aX[THE_INDICES[aVrtID][0]],
                               aY[THE_INDICES[aVrtID][1]],
                               aZ[THE_INDICES[aVrtID][2]]);
       }
-
       aGroup->AddPrimitiveArray (aPolyline);
     }
     else if (theMode == DM_Mesh)
     {
-      Handle (Graphic3d_Group) aGroup = Prs3d_Root::NewGroup (thePrs);
+      Handle (Graphic3d_Group) aGroup = thePrs->NewGroup();
 
       //------------------------------------------------------------------------------
       // Import material
@@ -229,23 +221,15 @@ namespace mesh
 
         Handle (Graphic3d_TextureMap) aMapKd;
         Handle (Graphic3d_TextureMap) aMapKs;
-
         for (size_t aMatIdx = 0; aMatIdx < 2; ++aMatIdx)
         {
           aBsdfMaterial[aMatIdx].SetMaterialType (Graphic3d_MATERIAL_PHYSIC);
-
-          aBsdfMaterial[aMatIdx].SetAmbient  (1.0);
-          aBsdfMaterial[aMatIdx].SetDiffuse  (1.0);
-          aBsdfMaterial[aMatIdx].SetSpecular (1.0);
-          aBsdfMaterial[aMatIdx].SetEmissive (0.0);
-
-          aBsdfMaterial[aMatIdx].SetAmbientColor  (Quantity_Color (0.1, 0.1, 0.1, Quantity_TOC_RGB));
-          aBsdfMaterial[aMatIdx].SetDiffuseColor  (Quantity_Color (0.8, 0.8, 0.8, Quantity_TOC_RGB));
-          aBsdfMaterial[aMatIdx].SetSpecularColor (Quantity_Color (0.0, 0.0, 0.0, Quantity_TOC_RGB));
-          aBsdfMaterial[aMatIdx].SetEmissiveColor (Quantity_Color (0.0, 0.0, 0.0, Quantity_TOC_RGB));
+          aBsdfMaterial[aMatIdx].SetAmbientColor  (Quantity_Color (0.1, 0.1, 0.1, Quantity_TOC_sRGB));
+          aBsdfMaterial[aMatIdx].SetDiffuseColor  (Quantity_Color (0.8, 0.8, 0.8, Quantity_TOC_sRGB));
+          aBsdfMaterial[aMatIdx].SetSpecularColor (Quantity_Color (0.0, 0.0, 0.0, Quantity_TOC_sRGB));
+          aBsdfMaterial[aMatIdx].SetEmissiveColor (Quantity_Color (0.0, 0.0, 0.0, Quantity_TOC_sRGB));
 
           Graphic3d_BSDF aBSDF = Graphic3d_BSDF::CreateDiffuse (Graphic3d_Vec3 (0.8f, 0.8f, 0.8f));
-
           // FIXME: the condition is always true!
           if ((*myRange.first)->mMaterialIndex >= 0)
           {
@@ -255,19 +239,18 @@ namespace mesh
             aiColor4D aDiffuse;
             aiColor4D aSpecular;
             aiColor4D aEmission;
-
             if (AI_SUCCESS == aiGetMaterialColor (aMaterial, AI_MATKEY_COLOR_AMBIENT, &aAmbient))
             {
               aBsdfMaterial[aMatIdx].SetAmbientColor (Quantity_Color (aAmbient.r,
                                                                       aAmbient.g,
-                                                                      aAmbient.b, Quantity_TOC_RGB));
+                                                                      aAmbient.b, Quantity_TOC_sRGB));
             }
 
             if (AI_SUCCESS == aiGetMaterialColor (aMaterial, AI_MATKEY_COLOR_DIFFUSE, &aDiffuse))
             {
               aBsdfMaterial[aMatIdx].SetAmbientColor (Quantity_Color (aDiffuse.r,
                                                                       aDiffuse.g,
-                                                                      aDiffuse.b, Quantity_TOC_RGB));
+                                                                      aDiffuse.b, Quantity_TOC_sRGB));
 
               aBSDF.Kd = Graphic3d_Vec3 (aDiffuse.r,
                                          aDiffuse.g,
@@ -278,7 +261,7 @@ namespace mesh
             {
               aBsdfMaterial[aMatIdx].SetAmbientColor (Quantity_Color (aSpecular.r,
                                                                       aSpecular.g,
-                                                                      aSpecular.b, Quantity_TOC_RGB));
+                                                                      aSpecular.b, Quantity_TOC_sRGB));
 
               aBSDF.Ks.r () = aSpecular.r;
               aBSDF.Ks.g () = aSpecular.g;
@@ -289,43 +272,36 @@ namespace mesh
             {
               aBsdfMaterial[aMatIdx].SetEmissiveColor (Quantity_Color (std::min (aEmission.r, 1.f),
                                                                        std::min (aEmission.g, 1.f),
-                                                                       std::min (aEmission.b, 1.f), Quantity_TOC_RGB));
+                                                                       std::min (aEmission.b, 1.f), Quantity_TOC_sRGB));
 
               aBSDF.Le = Graphic3d_Vec3 (aEmission.r,
                                          aEmission.g,
                                          aEmission.b);
             }
 
-            float aExponent;
-            float aStrength;
-
+            float aExponent = 0.0f;
+            float aStrength = 0.0f;
             unsigned int aMaxLength = 1;
-
             if (AI_SUCCESS == aiGetMaterialFloatArray (aMaterial, AI_MATKEY_SHININESS, &aExponent, &aMaxLength))
             {
               aMaxLength = 1;
-
               if (AI_SUCCESS == aiGetMaterialFloatArray (aMaterial, AI_MATKEY_SHININESS_STRENGTH, &aStrength, &aMaxLength))
               {
                 aExponent *= aStrength;
               }
 
               aBsdfMaterial[aMatIdx].SetShininess (Min (aExponent / 128.f, 1.f));
-
               // for BSDF exponent is converted to roughness value
               aBSDF.Ks.w () = std::sqrt (2.f / (aExponent + 2.f));
             }
-
             aBSDF.Normalize (); // normalize BSDF to ensure energy conservation
 
             aiString aTexturePathKd;
             aiString aTexturePathKs;
-
             if (AI_SUCCESS == aMaterial->GetTexture (aiTextureType_DIFFUSE, 0, &aTexturePathKd))
             {
               aMapKd = model::DataModel::GetDefault ()->Manager ()->PickTexture (myImporter->myDirectory + aTexturePathKd.C_Str ());
             }
-
             if (AI_SUCCESS == aMaterial->GetTexture (aiTextureType_SPECULAR, 0, &aTexturePathKs))
             {
               aMapKs = model::DataModel::GetDefault ()->Manager ()->PickTexture (myImporter->myDirectory + aTexturePathKs.C_Str ());
@@ -337,11 +313,9 @@ namespace mesh
 
         myAspect = new Graphic3d_AspectFillArea3d (
           Aspect_IS_SOLID, Quantity_NOC_WHITE, Quantity_NOC_WHITE, Aspect_TOL_SOLID, 1.0, aBsdfMaterial[0], aBsdfMaterial[1]);
-
         if (!aMapKd.IsNull ())
         {
           myAspect->SetTextureMap (aMapKd);
-
           myAspect->SetTextureMapOn (); // enable texturing
         }
 
@@ -358,11 +332,9 @@ namespace mesh
       {
         int aTotalNbElements = 0;
         int aTotalNbVertices = 0;
-
         for (aiMesh** aShape = myRange.first; aShape != myRange.second; ++aShape)
         {
           aTotalNbElements += (*aShape)->mNumFaces;
-
           if ((*aShape)->mNumFaces > 0)
           {
             aTotalNbVertices += (*aShape)->mNumVertices;
@@ -370,26 +342,20 @@ namespace mesh
         }
 
         myMeshes = new Graphic3d_ArrayOfTriangles (aTotalNbVertices, aTotalNbElements * 3, true, false, true);
-
         for (aiMesh** aShape = myRange.first; aShape != myRange.second; ++aShape)
         {
           std::map<size_t, int> aVrtMap;
-
           for (size_t aFaceIdx = 0; aFaceIdx < (*aShape)->mNumFaces; ++aFaceIdx)
           {
             const aiFace& aFace = (*aShape)->mFaces[aFaceIdx];
-
             Standard_ASSERT_RAISE (aFace.mNumIndices == 3,
               "Error! AIS mesh supports only triangular meshes");
-
             for (size_t aVrtIdx = 0; aVrtIdx < aFace.mNumIndices; ++aVrtIdx)
             {
               const size_t aVrt = aFace.mIndices[aVrtIdx];
-
               if (aVrtMap.find (aVrt) == aVrtMap.end ())
               {
                 gp_Dir aNormal (0, 0, 1);
-
                 if ((*aShape)->mNormals[aVrt].SquareLength () > FLT_MIN)
                 {
                   aNormal = gp_Dir ((*aShape)->mNormals[aVrt].x,
@@ -398,7 +364,6 @@ namespace mesh
                 }
 
                 gp_Pnt2d aTexcoord (0, 0);
-
                 if ((*aShape)->HasTextureCoords (0))
                 {
                   aTexcoord = gp_Pnt2d ((*aShape)->mTextureCoords[0][aVrt].x,
@@ -419,7 +384,7 @@ namespace mesh
         std::cout << "Mesh imported: " << aTotalNbElements << " triangles\n";
   #endif
       }
-    
+
       aGroup->AddPrimitiveArray (myMeshes);
     }
   }
@@ -438,35 +403,29 @@ namespace mesh
       WrapScene (aiScene& theScene, MeshRange& theRange)
       {
         mNumMaterials = theScene.mNumMaterials;
-
         if (mNumMaterials > 0)
         {
           mMaterials = theScene.mMaterials;
         }
 
         mNumMeshes = static_cast<unsigned> (theRange.second - theRange.first);
-
         if (mNumMeshes > 0)
         {
           mMeshes = new aiMesh*[mNumMeshes];
-
           for (size_t aMeshID = 0; aMeshID < mNumMeshes; ++aMeshID)
           {
             mMeshes[aMeshID] = *(theRange.first + aMeshID);
           }
         }
 
-        mRootNode = new aiNode;
-
+        mRootNode = new aiNode();
         if (mNumMeshes > 0)
         {
           mRootNode->mMeshes = new unsigned int[mNumMeshes];
-
           for (unsigned aMeshID = 0; aMeshID < mNumMeshes; ++aMeshID)
           {
             mRootNode->mMeshes[aMeshID] = aMeshID;
           }
-
           mRootNode->mNumMeshes = mNumMeshes;
         }
       }
@@ -475,7 +434,6 @@ namespace mesh
       ~WrapScene ()
       {
         mMaterials = NULL; // to not delete
-
         for (size_t aMeshID = 0; aMeshID < mNumMeshes; ++aMeshID)
         {
           mMeshes[aMeshID] = NULL; // to not delete
@@ -486,7 +444,6 @@ namespace mesh
     if (!myImporter.IsNull ())
     {
       WrapScene aScene (*myImporter->myScene, myRange);
-
       if (aiExportScene (&aScene, "plyb", theFileName.ToCString (), 0) != aiReturn_SUCCESS)
       {
         Standard_ASSERT_INVOKE ("Error! Failed to export ASSIMP scene");

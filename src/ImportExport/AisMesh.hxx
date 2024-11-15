@@ -13,16 +13,16 @@
 
 #include "MeshImporter.hxx"
 
-#include <Prs3d_Root.hxx>
+#include <AIS_InteractiveObject.hxx>
+#include <AIS_InteractiveContext.hxx>
+#include <Graphic3d_ArrayOfTriangles.hxx>
+#include <Graphic3d_AspectFillArea3d.hxx>
 #include <Prs3d_Drawer.hxx>
 #include <Prs3d_Presentation.hxx>
 #include <Prs3d_ShadingAspect.hxx>
 
-#include <AIS_InteractiveObject.hxx>
-#include <AIS_InteractiveContext.hxx>
-
-#include <Graphic3d_ArrayOfTriangles.hxx>
-#include <Graphic3d_AspectFillArea3d.hxx>
+// Assimp forward declarations
+struct aiMesh;
 
 namespace mesh
 {
@@ -75,7 +75,7 @@ namespace mesh
     Standard_EXPORT void ComputeSelection (const Handle (SelectMgr_Selection)& theSelection, const int theMode);
 
     //! Computes triangulated presentation of AIS mesh.
-    Standard_EXPORT void Compute (const Handle (PrsMgr_PresentationManager3d)& theMgr, const Handle (Prs3d_Presentation)& thePrs, const int theMode);
+    Standard_EXPORT void Compute (const Handle (PrsMgr_PresentationManager)& theMgr, const Handle (Prs3d_Presentation)& thePrs, const int theMode);
 
   protected:
 

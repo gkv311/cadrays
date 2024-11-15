@@ -12,7 +12,8 @@
 #define _ImportSettingsEditor_HeaderFile
 
 #include <imgui.h>
-#include <GuiPanel.hxx>
+
+#include "GuiPanel.hxx"
 
 //! Editor of import settings.
 class ImportSettingsEditor: public GuiPanel
@@ -55,13 +56,13 @@ private:
 private:
 
   // Mesh import settings
-  bool myToGroupObjects;
-  bool myToGenSmoothNrm;
-  bool myToPreTransform;
-  int  myVerticalDirect;
+  bool myToGroupObjects = true;
+  bool myToGenSmoothNrm = false;
+  bool myToPreTransform = false;
+  int  myVerticalDirect = 2;
 
   //! If TRUE focus should be set to name text edit.
-  bool myToSetNameFocus;
+  bool myToSetNameFocus = false;
 
 };
 

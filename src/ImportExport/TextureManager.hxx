@@ -11,8 +11,7 @@
 #ifndef _RT_TextureManager_Header
 #define _RT_TextureManager_Header
 
-#include <Graphic3d_TextureMap.hxx>
-
+#include <Graphic3d_Texture2Dmanual.hxx>
 #include <NCollection_DataMap.hxx>
 #include <NCollection_DoubleMap.hxx>
 

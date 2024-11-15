@@ -11,11 +11,11 @@
 #ifndef GuiBase_HeaderFile
 #define GuiBase_HeaderFile
 
-#include <string>
+#include "Settings.hxx"
 
 #include <Standard_Macro.hxx>
 
-#include <Settings.hxx>
+#include <string>
 
 class AIS_InteractiveContext;
 class V3d_View;
@@ -103,8 +103,8 @@ protected:
 
 protected:
 
-  AIS_InteractiveContext* myContext;
-  V3d_View* myView;
+  AIS_InteractiveContext* myContext = nullptr;
+  V3d_View* myView = nullptr;
 
   ManipulatorSettings myManipulatorSettings;
 
@@ -112,10 +112,10 @@ protected:
 
 private:
 
-  float myNoInteractionTime;
+  float myNoInteractionTime = 0.0f;
 
-  int myOldMouseY;
-  int myOldMouseX;
+  int myOldMouseY = 0;
+  int myOldMouseX = 0;
 
   bool mySelectedFlag = false;
 

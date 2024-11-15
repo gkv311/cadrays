@@ -9,21 +9,21 @@
 // any warranty.
 
 #include "LightSourcesEditor.hxx"
+
 #include "AppViewer.hxx"
 
 #include "IconsFontAwesome.h"
 
 #include "tinyfiledialogs.h"
 
+#include <Graphic3d_TextureEnv.hxx>
 #include <NCollection_Vec3.hxx>
-
 #include <V3d_Light.hxx>
 #include <V3d_DirectionalLight.hxx>
 #include <V3d_PositionalLight.hxx>
-#include <Graphic3d_TextureEnv.hxx>
 
-#include <fstream>
 #include <algorithm>
+#include <fstream>
 
 //=======================================================================
 //function : LightSourcesEditor
@@ -47,10 +47,9 @@ LightSourcesEditor::~LightSourcesEditor ()
 static Handle(V3d_Light) cloneLight (Handle(V3d_Light) theSource, const Handle (V3d_View)& theView)
 {
   Handle(V3d_Light) aLightRes;
-
   if (theSource->Type() == V3d_DIRECTIONAL)
   {
-    V3d_DirectionalLight* aNewLight = new V3d_DirectionalLight (theView->Viewer());
+    Handle(V3d_DirectionalLight) aNewLight = new V3d_DirectionalLight();
     Handle(V3d_DirectionalLight) aLightDirectional = Handle(V3d_DirectionalLight)::DownCast (theSource);
 
     aNewLight->SetIntensity (theSource->Intensity());
@@ -60,11 +59,12 @@ static Handle(V3d_Light) cloneLight (Handle(V3d_Light) theSource, const Handle (
     aLightDirectional->Direction (aLightDir[0], aLightDir[1], aLightDir[2]);
     aNewLight->SetDirection (aLightDir[0], aLightDir[1], aLightDir[2]);
 
+    theView->Viewer()->AddLight (aNewLight);
     aLightRes = aNewLight;
   }
   else if (theSource->Type() == V3d_POSITIONAL)
   {
-    V3d_PositionalLight* aNewLight = new V3d_PositionalLight (theView->Viewer(), 0.0, 0.0, 0.0);
+    Handle(V3d_PositionalLight) aNewLight = new V3d_PositionalLight (gp_Pnt (0.0, 0.0, 0.0));
     Handle(V3d_PositionalLight) aLightPositional = Handle(V3d_PositionalLight)::DownCast (theSource);
 
     aNewLight->SetIntensity (theSource->Intensity());
@@ -74,6 +74,7 @@ static Handle(V3d_Light) cloneLight (Handle(V3d_Light) theSource, const Handle (
     aLightPositional->Position (aLightPos[0], aLightPos[1], aLightPos[2]);
     aNewLight->SetPosition (aLightPos[0], aLightPos[1], aLightPos[2]);
 
+    theView->Viewer()->AddLight (aNewLight);
     aLightRes = aNewLight;
   }
 
@@ -142,10 +143,9 @@ void LightSourcesEditor::Draw (const char* theTitle)
     const float aWidgetLineHeight = roundf (ImGui::GetTextLineHeight() + aStyle.FramePadding.y * 2.f);
     ImVec2 aLightButtonSize ((float)getScaledSize (82), aWidgetLineHeight * 4.f + aStyle.ItemSpacing.y * 3.f);
 
-    myMainGui->View()->InitActiveLights();
-    for (V3d_ListOfLightIterator aLightIter (myMainGui->View()->ActiveLightIterator()); aLightIter.More(); aLightIter.Next())
+    for (const Handle(V3d_Light)& aLightIter : myMainGui->View()->ActiveLights())
     {
-      Handle(V3d_Light) aCurrentLight = aLightIter.Value();
+      Handle(V3d_Light) aCurrentLight = aLightIter;
 
       bool toSkip = false;
 
@@ -375,12 +375,12 @@ void LightSourcesEditor::Draw (const char* theTitle)
     {
       if (ImGui::Selectable ("Positional"))
       {
-        aLightNew = new V3d_PositionalLight (myMainGui->View()->Viewer(), 0.0, 0.0, 0.0);
+        aLightNew = new V3d_PositionalLight (gp_Pnt (0.0, 0.0, 0.0));
       }
 
       if (ImGui::Selectable ("Directional"))
       {
-        aLightNew = new V3d_DirectionalLight (myMainGui->View()->Viewer());
+        aLightNew = new V3d_DirectionalLight();
       }
 
       if (ImGui::Selectable ("Environment map"))
@@ -401,6 +401,7 @@ void LightSourcesEditor::Draw (const char* theTitle)
     // Add new light if requested
     if (!aLightNew.IsNull())
     {
+      myMainGui->View()->Viewer()->AddLight (aLightNew);
       myMainGui->View()->Viewer()->SetLightOn (aLightNew);
       myMainGui->View()->Viewer()->UpdateLights();
     }

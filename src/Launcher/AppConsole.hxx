@@ -11,9 +11,9 @@
 #ifndef _AppConsole_HeaderFile
 #define _AppConsole_HeaderFile
 
-#include <imgui.h>
+#include "imgui.h"
 
-#include <GuiPanel.hxx>
+#include "GuiPanel.hxx"
 
 #include <string>
 
@@ -43,11 +43,11 @@ public:
 public:
   char                  InputBuf[1024 * 256];
   ImVector<char*>       Items;
-  bool                  ScrollToBottom;
+  bool                  ScrollToBottom = false;
   ImVector<char*>       History;
-  int                   HistoryPos;    // -1: new line, 0..History.Size-1 browsing history.
+  int                   HistoryPos = -1; // -1: new line, 0..History.Size-1 browsing history.
   ImVector<const char*> Commands;
-  Draw_Interpretor*     TclInterpretor;
+  Draw_Interpretor*     TclInterpretor = nullptr;
 };
 
 #endif // _AppConsole_HeaderFile

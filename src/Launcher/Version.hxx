@@ -22,11 +22,9 @@ struct CADRaysVersion
   static const char* Get()
   {
     static char* aVersionStr = NULL;
-
     if (aVersionStr == NULL)
     {
       aVersionStr = new char[32];
-
       sprintf (aVersionStr, "%d.%d.%d", CADRAYS_VERSION_MAJOR, CADRAYS_VERSION_MINOR, CADRAYS_VERSION_BUILD);
     }
 

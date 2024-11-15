@@ -13,7 +13,7 @@
 
 #include <imgui.h>
 
-#include <GuiPanel.hxx>
+#include "GuiPanel.hxx"
 
 #include <TCollection_AsciiString.hxx>
 
@@ -57,8 +57,8 @@ private:
 
   int myCurrentFile = 0;
 
-  char* mySourceBuffer;
-  size_t mySourceSize;
+  char* mySourceBuffer = nullptr;
+  size_t mySourceSize = 0;
 
 };
 

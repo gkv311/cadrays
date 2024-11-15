@@ -9,6 +9,7 @@
 // any warranty.
 
 #include "TransformWidget.hxx"
+
 #include "IconsFontAwesome.h"
 
 #include <ImGuizmo.h>
@@ -45,14 +46,12 @@ TransformWidget::~TransformWidget ()
 void TransformWidget::Draw (const char* theTitle)
 {
   Handle (AIS_InteractiveObject) aSelectedObject;
-
   if (myMainGui->InteractiveContext () == NULL)
   {
     Standard_ASSERT_INVOKE ("Error! Failed to get AIS context");
   }
 
   bool toExit = !ImGui::BeginDock (theTitle, &IsVisible, NULL);
-
   if (!toExit)
   {
     aSelectedObject = myMainGui->InteractiveContext ()->FirstSelectedObject ();
@@ -98,10 +97,10 @@ void TransformWidget::Draw (const char* theTitle)
 
   aSelectedObject->LocalTransformation().GetMat4 (aLocal);
 
-  float aMatrixMovement[3];
-  float aMatrixRotation[3];
-  float aMatrixIsoscale[3];
-  float anAnchor[3];
+  float aMatrixMovement[3] = {};
+  float aMatrixRotation[3] = {};
+  float aMatrixIsoscale[3] = {};
+  float anAnchor[3] = {};
   static float aPrevMatrixRotation[3] = { 0.0f, 0.0f, 0.0f };
   static float aPrevIsoscale = 1.0f;
 

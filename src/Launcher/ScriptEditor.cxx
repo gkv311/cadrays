@@ -9,16 +9,17 @@
 // any warranty.
 
 #include "ScriptEditor.hxx"
+
 #include "IconsFontAwesome.h"
 
 #include "AppConsole.hxx"
 #include "AppViewer.hxx"
 
-#include <OSD_File.hxx>
-#include <OSD_Path.hxx>
 #include <OSD_Directory.hxx>
-#include <OSD_FileIterator.hxx>
 #include <OSD_DirectoryIterator.hxx>
+#include <OSD_File.hxx>
+#include <OSD_FileIterator.hxx>
+#include <OSD_Path.hxx>
 #include <OSD_Protection.hxx>
 
 #include <fstream>

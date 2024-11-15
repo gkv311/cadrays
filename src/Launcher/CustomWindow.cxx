@@ -6,7 +6,7 @@
 // refer to file LICENSE.txt for complete text of the license and disclaimer of 
 // any warranty.
 
-#include <CustomWindow.hxx>
+#include "CustomWindow.hxx"
 
 #if defined(_WIN32) && !defined(OCCT_UWP)
 
@@ -45,9 +45,9 @@ CustomWindow::CustomWindow (const Handle(Aspect_DisplayConnection)& theXDisplay,
 // function : Ratio
 // purpose  :
 // =======================================================================
-Quantity_Ratio CustomWindow::Ratio() const
+double CustomWindow::Ratio() const
 {
-  return Quantity_Ratio(XSize)/ Quantity_Ratio(YSize);
+  return double(XSize)/ double(YSize);
 }
 
 // =======================================================================

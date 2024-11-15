@@ -8,10 +8,7 @@
 // refer to file LICENSE.txt for complete text of the license and disclaimer of 
 // any warranty.
 
-#include <V3d_View.hxx>
-#include <V3d_Viewer.hxx>
-#include <Graphic3d_GraphicDriver.hxx>
-#include <ViewerTest.hxx>
+#include "SettingsWidget.hxx"
 
 #include <DataNode.hxx>
 #include <DataModel.hxx>
@@ -22,7 +19,10 @@
 #include "FlightControls.h"
 #include "IconsFontAwesome.h"
 
-#include "SettingsWidget.hxx"
+#include <Graphic3d_GraphicDriver.hxx>
+#include <V3d_View.hxx>
+#include <V3d_Viewer.hxx>
+#include <ViewerTest.hxx>
 
 //=======================================================================
 //function : SettingsWidget
@@ -52,7 +52,6 @@ void SettingsWidget::Init (GuiBase* theMainGui)
 
   // Load settings
   const std::string aCameraControls = myMainGui->GetSettings ().Get ("rendering", "camera_controls", "orbital");
-
   if (aCameraControls == "orbital")
   {
     myMainGui->GetAppViewer ()->SetViewControls (new OrbitControls);
@@ -74,15 +73,7 @@ void SettingsWidget::Init (GuiBase* theMainGui)
   if (aRenderMode != 2)
   {
     aParams.Method = Graphic3d_RM_RAYTRACING;
-
-    if (aRenderMode != 0)
-    {
-      aParams.IsGlobalIlluminationEnabled = 0;
-    }
-    else
-    {
-      aParams.IsGlobalIlluminationEnabled = 1;
-    }
+    aParams.IsGlobalIlluminationEnabled = aRenderMode != 0 ? 0 : 1;
   }
   else
   {
@@ -119,8 +110,8 @@ void SettingsWidget::Draw (const char* theTitle)
 
       if (ImGui::SliderInt2 ("Viewport", aResolution, MIN_RES, MAX_RES, "%.0f px") && !aFitToArea)
       {
-        aResolution[0] = std::max (std::min (aResolution[0], MAX_RES), MIN_RES);
-        aResolution[1] = std::max (std::min (aResolution[1], MAX_RES), MIN_RES);
+        aResolution[0] = Max (Min (aResolution[0], MAX_RES), MIN_RES);
+        aResolution[1] = Max (Min (aResolution[1], MAX_RES), MIN_RES);
 
         if (toKeepAspect)
         {
@@ -129,14 +120,14 @@ void SettingsWidget::Draw (const char* theTitle)
 
           if (aResolution[0] == myMainGui->GetAppViewer ()->RTSize ().x)
           {
-            aResolution[0] = std::max (std::min (static_cast<int> (aResolution[1] * anAspect), MAX_RES), MIN_RES);
+            aResolution[0] = Max (Min (static_cast<int> (aResolution[1] * anAspect), MAX_RES), MIN_RES);
 
             // ensure that aspect has not been changed due to clamping
             aResolution[1] = static_cast<int> (aResolution[0] / anAspect);
           }
           else
           {
-            aResolution[1] = std::max (std::min (static_cast<int> (aResolution[0] / anAspect), MAX_RES), MIN_RES);
+            aResolution[1] = Max (Min (static_cast<int> (aResolution[0] / anAspect), MAX_RES), MIN_RES);
 
             // ensure that aspect has not been changed due to clamping
             aResolution[0] = static_cast<int> (aResolution[1] * anAspect);
@@ -149,7 +140,6 @@ void SettingsWidget::Draw (const char* theTitle)
       myMainGui->AddTooltip ("Target rendering resolution");
 
       bool aKeepAspectTmp = toKeepAspect;
-
       if (ImGui::Checkbox ("Keep aspect", &aKeepAspectTmp) && !aFitToArea)
       {
         toKeepAspect = aKeepAspectTmp;
@@ -453,7 +443,6 @@ void SettingsWidget::Draw (const char* theTitle)
                   static int tileToSetting (const int theNumber)
                   {
                     int aSetting = 0;
-
                     for (int aValue = theNumber / 64; aValue > 1; ++aSetting)
                     {
                       aValue >>= 1;
@@ -575,7 +564,6 @@ void SettingsWidget::Draw (const char* theTitle)
         else if (aRenderMode == 1) // ray tracing (RT)
         {
           int aNbBounces = aParams.RaytracingDepth;
-
           if (ImGui::SliderInt ("Bounces", &aNbBounces, 1, 10))
           {
             aParams.RaytracingDepth = (aNbBounces < 1) ? 1 : (aNbBounces > 10 ? 10 : aNbBounces);
@@ -583,7 +571,6 @@ void SettingsWidget::Draw (const char* theTitle)
           myMainGui->AddTooltip ("Maximum number of light bounces");
 
           bool aShadowsEnabled = aParams.IsShadowEnabled;
-
           if (ImGui::Checkbox ("Shadows", &aShadowsEnabled))
           {
             aParams.IsShadowEnabled = aShadowsEnabled;
@@ -591,7 +578,6 @@ void SettingsWidget::Draw (const char* theTitle)
           myMainGui->AddTooltip ("Enable hard shadows");
 
           bool aReflecEnabled = aParams.IsReflectionEnabled;
-
           if (ImGui::Checkbox ("Reflections", &aReflecEnabled))
           {
             aParams.IsReflectionEnabled = aReflecEnabled;
@@ -599,7 +585,6 @@ void SettingsWidget::Draw (const char* theTitle)
           myMainGui->AddTooltip ("Enable specular reflections");
 
           bool aFsaaEnabled = aParams.IsAntialiasingEnabled;
-
           if (ImGui::Checkbox ("Anti-aliasing", &aFsaaEnabled))
           {
             aParams.IsAntialiasingEnabled = aFsaaEnabled;
@@ -609,7 +594,6 @@ void SettingsWidget::Draw (const char* theTitle)
         else if (aRenderMode == 2) // OpenGL
         {
           int aNbSamples = aParams.NbMsaaSamples;
-
           if (ImGui::SliderInt ("MSAA", &aNbSamples, 0, 16))
           {
             aParams.NbMsaaSamples = (aNbSamples < 0) ? 0 : (aNbSamples > 16 ? 16 : aNbSamples);

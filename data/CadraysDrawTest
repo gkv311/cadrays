@@ -1,0 +1,6 @@
+! Hierarchy of plug-ins
+ALL        : CADRAYSDRAWTEST
+DEFAULT    : CADRAYSDRAWTEST
+
+! Mapping from naming to toolkits (libraries)
+CADRAYSDRAWTEST : ImportExport

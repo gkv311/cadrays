@@ -11,7 +11,6 @@
 #include "DataContext.hxx"
 
 #include <ViewerTest_DoubleMapOfInteractiveAndName.hxx>
-#include <ViewerTest_DoubleMapIteratorOfDoubleMapOfInteractiveAndName.hxx>
 
 //! Returns map of AIS objects.
 extern ViewerTest_DoubleMapOfInteractiveAndName& GetMapOfAIS ();
@@ -113,12 +112,7 @@ namespace model
   Handle (AIS_InteractiveObject) DataContext::BoundObject (const TCollection_AsciiString& theName)
   {
     Handle (AIS_InteractiveObject) anObject;
-
-    if (GetMapOfAIS ().IsBound2 (theName))
-    {
-      anObject = Handle (AIS_InteractiveObject)::DownCast (GetMapOfAIS ().Find2 (theName));
-    }
-
+    GetMapOfAIS ().Find2 (theName, anObject);
     return anObject;
   }
 

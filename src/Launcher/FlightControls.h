@@ -11,7 +11,7 @@
 #ifndef FlightControls_HeaderFile
 #define FlightControls_HeaderFile
 
-#include <ViewControls.h>
+#include "ViewControls.h"
 
 #include <Graphic3d_Camera.hxx>
 
@@ -44,7 +44,7 @@ public:
   Standard_EXPORT virtual void OnKeyDown (const int theKey);
   Standard_EXPORT virtual void OnKeyUp (const int theKey);
 
-  Standard_EXPORT virtual bool IsWalkthough() const
+  virtual bool IsWalkthough() const
   {
     return true;
   }
@@ -52,7 +52,7 @@ public:
 private:
 
   //! Object containing internal implementation details of viewer.
-  FlightControls_Internal* myInternal;
+  FlightControls_Internal* myInternal = nullptr;
 };
 
 #endif // FlightControls_HeaderFile

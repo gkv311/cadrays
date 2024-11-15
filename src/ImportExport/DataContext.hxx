@@ -11,7 +11,8 @@
 #ifndef _RT_DataContext_HeaderFile
 #define _RT_DataContext_HeaderFile
 
-#include <DataModel.hxx>
+#include "DataModel.hxx"
+
 #include <NCollection_Map.hxx>
 
 namespace model

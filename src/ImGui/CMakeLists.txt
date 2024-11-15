@@ -1,59 +1,41 @@
-cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.13)
 
 project (ImGui)
 
-if (POLICY CMP0020)
-  cmake_policy (SET CMP0020 NEW)
-endif()
-
-if (POLICY CMP0043)
-  cmake_policy (SET CMP0043 NEW)
-endif()
-
-# =============================================================================
-# Look for required dependencies
-# =============================================================================
-
-find_package(OCCT REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(FreeType REQUIRED)
-find_package(FreeImage REQUIRED)
-
-set (OPENGL_LIBRARIES ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
-
-get_target_property (UTILS_INCLUDE_DIRS Utils INTERFACE_INCLUDE_DIRECTORIES)
-
-# =============================================================================
-# Define production steps
-# =============================================================================
-
-include_directories (
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${UTILS_INCLUDE_DIRS}
-  ${FREETYPE_INCLUDE_DIRS}
-  ${OCCT_INCLUDE_DIRS}
+set (USED_SOURCES
+  ImColorPicker.cxx
+  imgui.cxx
+  imgui_demo.cxx
+  imgui_draw.cxx
+  ImGuizmo.cxx
+  ImRaytraceControls.cxx
 )
-
-file (GLOB_RECURSE ProjectSources *.cxx)
-file (GLOB_RECURSE ProjectHeaders *.h)
-
-source_group ("Header Files" FILES
-  ${ProjectHeaders}
+set (USED_HEADERS
+  stb/stb_rect_pack.h
+  stb/stb_textedit.h
+  stb/stb_truetype.h
+  IconsFontAwesome.h
+  ImColorPicker.h
+  imconfig.h
+  imgui.h
+  imgui_dock.h
+  imgui_internal.h
+  imgui_user.h
+  ImGuizmo.h
+  ImRaytraceControls.h
+  imgui_dock.inl
+  imgui_user.inl
 )
+source_group ("Source Files" FILES ${USED_SOURCES})
+source_group ("Header Files" FILES ${USED_HEADERS})
 
-add_library (${PROJECT_NAME} SHARED
-  ${ProjectSources}
-  ${ProjectHeaders}
-)
-
-target_link_libraries_config_aware (${PROJECT_NAME} OCCT)
-target_link_libraries (${PROJECT_NAME} ${OPENGL_LIBRARIES})
-target_link_libraries (${PROJECT_NAME} Utils)
-
+add_library (${PROJECT_NAME} SHARED ${USED_SOURCES} ${USED_HEADERS})
 set_target_properties (${PROJECT_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# =============================================================================
-# Define install steps
-# =============================================================================
+set (anOcctLibs TKV3d TKService TKPrim TKTopAlgo TKGeomAlgo TKBRep TKGeomBase TKG3d TKG2d TKMath TKernel)
+target_link_libraries (${PROJECT_NAME} PRIVATE ${anOcctLibs})
+
+add_dependencies      (${PROJECT_NAME}         Utils)
+target_link_libraries (${PROJECT_NAME} PRIVATE Utils)
 
 install (TARGETS ${PROJECT_NAME} RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")

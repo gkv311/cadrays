@@ -39,7 +39,7 @@ GuiBase::GuiBase (const std::string& theSettingsFile)
 void GuiBase::OpenLink (const char * theLink)
 {
 #ifdef _WIN32
-  char aDir[256];
+  char aDir[256] = {};
   GetCurrentDirectoryA (256, aDir);
   ShellExecuteA (NULL, "open", theLink, NULL, aDir, SW_SHOWNORMAL);
 #endif

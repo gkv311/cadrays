@@ -11,13 +11,13 @@
 #ifndef _AppGui_HeaderFile
 #define _AppGui_HeaderFile
 
-#include <memory>
-
-#include <GuiBase.hxx>
-#include <GuiPanel.hxx>
-#include <AppViewer.hxx>
+#include "GuiBase.hxx"
+#include "GuiPanel.hxx"
+#include "AppViewer.hxx"
 
 #include <Draw_Interpretor.hxx>
+
+#include <memory>
 
 //! This class implements main UI of the application.
 class AppGui : public GuiBase
@@ -33,10 +33,7 @@ public:
 protected:
 
   //! Returns 3D viewer created.
-  virtual AppViewer* GetAppViewer()
-  {
-    return myViewer;
-  }
+  virtual AppViewer* GetAppViewer() { return myViewer; }
 
   //! Draws application UI using OpenGL.
   virtual void Draw (AIS_InteractiveContext* theContext, V3d_View* theView, bool theHasFocus);
@@ -68,16 +65,16 @@ protected:
 protected:
 
   //! Viewer used for UI rendering.
-  AppViewer* myViewer;
+  AppViewer* myViewer = nullptr;
 
   //! DRAW interpreter for executing TCL commands.
-  Draw_Interpretor* myTclInterpretor;
+  Draw_Interpretor* myTclInterpretor = nullptr;
 
   //! Set of UI panels (widgets).
   std::map <std::string, std::unique_ptr<GuiPanel> > myPanels;
 
   //! Indicates that UI was initialized.
-  bool isInitialized;
+  bool isInitialized = false;
 
   //! Indicates that UI should be scaled for DPI reported.
   bool myUiAutoScale = true;
@@ -89,4 +86,5 @@ protected:
   bool myShowImportDialog = false;
 
 };
+
 #endif // _AppGui_HeaderFile

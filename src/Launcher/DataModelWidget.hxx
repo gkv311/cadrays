@@ -11,10 +11,10 @@
 #ifndef _DataModelWidget_HeaderFile
 #define _DataModelWidget_HeaderFile
 
-#include <imgui.h>
+#include "imgui.h"
 
-#include <DataNode.hxx>
-#include <GuiPanel.hxx>
+#include "DataNode.hxx"
+#include "GuiPanel.hxx"
 
 //! Widget providing data model navigation.
 class DataModelWidget: public GuiPanel

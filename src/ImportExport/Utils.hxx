@@ -11,7 +11,6 @@
 #ifndef _RT_Utils_Header
 #define _RT_Utils_Header
 
-#include <AIS_Shape.hxx>
 #include <AIS_TexturedShape.hxx>
 
 namespace model
@@ -22,7 +21,7 @@ namespace model
   public:
 
     //! Returns 2D texture map applied.
-    const Handle (Graphic3d_Texture2Dmanual)& Texture ()
+    const Handle (Graphic3d_Texture2D)& Texture ()
     {
       return myTexture;
     }

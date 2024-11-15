@@ -42,30 +42,28 @@
 #include <OpenGl_FrameBuffer.hxx>
 #include <OpenGl_View.hxx>
 
-#include <V3d_Viewer.hxx>
-#include <V3d_View.hxx>
 #include <AIS_InteractiveContext.hxx>
-#include <WNT_Window.hxx>
-#include <V3d_RectangularGrid.hxx>
+#include <V3d_Viewer.hxx>
 #include <gp_Ax3.hxx>
+#include <V3d_View.hxx>
+#include <V3d_RectangularGrid.hxx>
+#include <ViewerTest.hxx>
+#include <ViewerTest_DoubleMapOfInteractiveAndName.hxx>
+#include <WNT_Window.hxx>
 
 #include "imgui_impl_glfw_gl3.h"
-#include "glfw3.h"
+#include <GLFW/glfw3.h>
 #ifdef WIN32
 # define GLFW_EXPOSE_NATIVE_WIN32
 # define GLFW_EXPOSE_NATIVE_WGL
-# include "glfw3native.h"
+# include <GLFW/glfw3native.h>
 #else
 #define GLFW_EXPOSE_NATIVE_X11
 #define GLFW_EXPOSE_NATIVE_GLX
-# include "glfw3native.h"
+# include <GLFW/glfw3native.h>
 #endif
 
 #include "Version.hxx"
-
-#include <ViewerTest.hxx>
-#include <ViewerTest_DoubleMapOfInteractiveAndName.hxx>
-#include <ViewerTest_DoubleMapIteratorOfDoubleMapOfInteractiveAndName.hxx>
 
 #if ! defined(_WIN32)
 extern ViewerTest_DoubleMapOfInteractiveAndName& GetMapOfAIS();
@@ -182,46 +180,19 @@ struct AppViewer_Testing
 
 struct AppViewer_Camera
 {
-  AppViewer_Camera() :
-    DirAngle (-1.0f),
-    DirAngleStep (0.0f),
-    UpAngle (-1.0f),
-    UpAngleStep (0.0f),
-    StartUp (0.0f, 0.0f, 1.0f),
-    FinishUp (0.0f, 0.0f, 1.0f),
-    StartDir (0.0f, 0.0f, 1.0f),
-    FinishDir (0.0f, 0.0f, 1.0f),
-    StartPoint(0.0f, 0.0f, 0.0f),
-    FinishPoint(0.0f, 0.0f, 0.0f),
-    PointT (-1.0f),
-    TStep (0.0f)
-  {}
-
-  float DirAngle;
-
-  float DirAngleStep;
-
-  float UpAngle;
-  
-  float UpAngleStep;
-
-  gp_Dir StartUp;
-  
-  gp_Dir FinishUp;
-
-  gp_Dir StartDir;
-
-  gp_Dir FinishDir;
-
-  gp_Pnt StartPoint;
-
-  gp_Pnt FinishPoint;
-
-  float PointT;
-
-  float TStep;
+  float DirAngle = -1.0f;
+  float DirAngleStep = 0.0f;
+  float UpAngle = -1.0f;
+  float UpAngleStep = 0.0f;
+  gp_Dir StartUp = gp::DZ();
+  gp_Dir FinishUp = gp::DZ();
+  gp_Dir StartDir = gp::DZ();
+  gp_Dir FinishDir = gp::DZ();
+  gp_Pnt StartPoint = gp::Origin();
+  gp_Pnt FinishPoint = gp::Origin();
+  float PointT = -1.0f;
+  float TStep = 0.0f;
 };
-
 
 // External font data (from file DroidSans.c)
 extern "C" {
@@ -274,7 +245,7 @@ void removeSelectedFromSubtree (model::DataNode* theNode, std::set <model::DataN
       removeSelectedFromSubtree (aNodeIter->get(), theSelected);
     }
   }
-};
+}
 
 //=======================================================================
 //function : MouseButtonCallback
@@ -309,7 +280,7 @@ void MouseButtonCallback (GLFWwindow* theWindow, int theButton, int theAction, i
     return;
   }
 
-  double aMouseX, aMouseY;
+  double aMouseX = 0.0, aMouseY = 0.0;
   glfwGetCursorPos (theWindow, &aMouseX, &aMouseY);
 
   if (aViewerInternal->CurrentViewControls)
@@ -350,7 +321,6 @@ void MouseButtonCallback (GLFWwindow* theWindow, int theButton, int theAction, i
                                            0);
 
       ImGuiIO& anIo = ImGui::GetIO();
-
       if (anIo.KeyCtrl)
       {
         auto& aContext = aViewerInternal->AISContext;
@@ -375,7 +345,6 @@ void MouseButtonCallback (GLFWwindow* theWindow, int theButton, int theAction, i
 
             const TCollection_AsciiString& aName = GetMapOfAIS().Find1 (anObject);
             model::DataNode* aNode = aModel->Get (aName).get ();
-
             if (aNode == NULL)
             {
               continue;
@@ -393,7 +362,6 @@ void MouseButtonCallback (GLFWwindow* theWindow, int theButton, int theAction, i
 
             // Remove from set selected nodes present in subtree
             removeSelectedFromSubtree (theNode, theSelected);
-
             if (theSelected.empty())
             {
               // Everything is fine, nodes have a common ancestor
@@ -443,9 +411,7 @@ void MouseButtonCallback (GLFWwindow* theWindow, int theButton, int theAction, i
       else
       {
         aViewerInternal->AISContext->ClearSelected(false);
-        
         aViewerInternal->AISContext->Select(false);
-        
         if (aViewerInternal->SelectionCallback)
         {
           aViewerInternal->SelectionCallback (aViewerInternal->ExternalGui);
@@ -496,7 +462,6 @@ void ScrollCallback (GLFWwindow* window, double xoffset, double yoffset)
   assert (aViewerInternal);
 
   ImGui_ImplGlfwGL3_ScrollCallback (window, xoffset, yoffset);
-
   if (aViewerInternal->ImguiHasFocus || aViewerInternal->IsViewBlocked())
   {
     return;
@@ -520,17 +485,14 @@ void KeyCallback (GLFWwindow* theWindow, int theKey, int theScancode, int theAct
   assert (aViewerInternal);
 
   ImGui_ImplGlfwGL3_KeyCallback (theWindow, theKey, theScancode, theAction, theMods);
-
   if (aViewerInternal->CurrentViewControls != NULL && theAction == GLFW_RELEASE)
   {
     aViewerInternal->CurrentViewControls->OnKeyUp (theKey);
   }
-
   if (aViewerInternal->ImguiHasFocus || aViewerInternal->ImguiHasKeyboardFocus || aViewerInternal->IsViewBlocked())
   {
     return;
   }
-
   if (!aViewerInternal->CurrentViewControls)
   {
     return;
@@ -577,7 +539,6 @@ AppViewer::AppViewer (const std::string theTitle,
     myCameraMovingData (new AppViewer_Camera)
 {
   glfwSetErrorCallback (errorCallback);
-
   if (!glfwInit())
   {
     throw std::runtime_error ("Could not initialize window");
@@ -600,15 +561,10 @@ AppViewer::AppViewer (const std::string theTitle,
 
   Handle (Aspect_DisplayConnection) aDisplayConnection = new Aspect_DisplayConnection;
   Handle (OpenGl_GraphicDriver) aGraphicDriver = new OpenGl_GraphicDriver (aDisplayConnection);
-
   aGraphicDriver->ChangeOptions().buffersNoSwap = Standard_True;
 
   // Create viewer
-  TCollection_ExtendedString a3DName ("Vis3D");
-
-  Handle (V3d_Viewer) a3DViewer = new V3d_Viewer (aGraphicDriver,
-    a3DName.ToExtString(), "", 1000.0, V3d_XposYnegZpos, Quantity_NOC_GRAY20, V3d_ZBUFFER, V3d_PHONG);
-
+  Handle (V3d_Viewer) a3DViewer = new V3d_Viewer (aGraphicDriver);
   myInternal->AISContext = new AIS_InteractiveContext (a3DViewer);
 
   glfwSetDropCallback (myInternal->Window, fileDropCallback);
@@ -962,10 +918,8 @@ void AppViewer::Run()
         {
           // Handle resize
           myInternal->ScreenFBO->InitLazy (myInternal->GLContext,
-                                           static_cast<GLsizei> (myRTSize.x),
-                                           static_cast<GLsizei> (myRTSize.y),
-                                           GL_RGB8,
-                                           GL_DEPTH24_STENCIL8);
+                                           Graphic3d_Vec2i(static_cast<GLsizei> (myRTSize.x), static_cast<GLsizei> (myRTSize.y)),
+                                           GL_RGB8, GL_DEPTH24_STENCIL8);
 
           myInternal->NeedToResizeFBO = false;
         }
@@ -1256,7 +1210,7 @@ void AppViewer::Run()
   {
     if (myTestingData->MaxFramesCount > 0)
     {
-      if (myTestingData->PixMap.InitZero (Image_PixMap::ImgRGB, Standard_Size(myRTSize.x), Standard_Size(myRTSize.y)))
+      if (myTestingData->PixMap.InitZero (Image_Format_RGB, Standard_Size(myRTSize.x), Standard_Size(myRTSize.y)))
       {
         myInternal->View->View()->BufferDump(myTestingData->PixMap, Graphic3d_BT_RGB);
       }

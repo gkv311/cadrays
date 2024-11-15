@@ -11,13 +11,13 @@
 #ifndef AppViewer_HeaderFile
 #define AppViewer_HeaderFile
 
-#include <string>
-#include <map>
-
 #include <AIS_InteractiveObject.hxx>
 #include <Image_AlienPixMap.hxx>
 
-#include <imgui.h>
+#include "imgui.h"
+
+#include <string>
+#include <map>
 
 class GuiBase;
 class ViewControls;
@@ -111,16 +111,10 @@ public:
   Standard_EXPORT void SetTitle (const std::string& theTitle);
 
   //! Sets data directory.
-  void SetDataDir (const char* theDataDir)
-  {
-    myDataDir = theDataDir;
-  }
+  void SetDataDir (const char* theDataDir) { myDataDir = theDataDir; }
 
   //! Returns data directory.
-  const std::string& DataDir()
-  {
-    return myDataDir;
-  }
+  const std::string& DataDir() { return myDataDir; }
 
   //! Loads image and makes it accessible by given name (file name should me relative to myDataDir).
   Standard_EXPORT void LoadTextureFromFile (const char* theName, const char* theFileName);
@@ -138,16 +132,10 @@ public:
   Standard_EXPORT float GetPrimaryMonitorDPI();
 
   //! Fit viewport size to available area.
-  bool FitToArea() const
-  {
-    return myFitToArea;
-  }
+  bool FitToArea() const { return myFitToArea; }
 
   //! Fit viewport size to available area.
-  void SetFitToArea (const bool theToFit)
-  {
-    myFitToArea = theToFit;
-  }
+  void SetFitToArea (const bool theToFit) { myFitToArea = theToFit; }
 
   //! Returns OCCT logo texture id.
   Standard_EXPORT unsigned int GetLogoTexture (int* theWidth = NULL, int* theHeight = NULL);
@@ -174,13 +162,13 @@ private:
   std::string myDataDir;
 
   //! Object containing internal implementation details of viewer.
-  AppViewer_Internal* myInternal;
+  AppViewer_Internal* myInternal = nullptr;
 
   //! Object containing data for testing.
-  AppViewer_Testing* myTestingData;
+  AppViewer_Testing* myTestingData = nullptr;
 
   //! Object containing data for camera moving.
-  AppViewer_Camera* myCameraMovingData;
+  AppViewer_Camera* myCameraMovingData = nullptr;
 };
 
 #endif // AppViewer_HeaderFile

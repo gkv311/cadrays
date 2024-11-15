@@ -10,26 +10,21 @@
 
 #include "ImportExportPlugin.hxx"
 
-#include <gp_Quaternion.hxx>
-
-#include <OSD_File.hxx>
-#include <OSD_Path.hxx>
+#include "Utils.hxx"
+#include "AisMesh.hxx"
+#include "DataContext.hxx"
 
 #include <Draw.hxx>
-#include <ViewerTest.hxx>
-
+#include <gp_Quaternion.hxx>
+#include <OSD_File.hxx>
+#include <OSD_Path.hxx>
 #include <V3d_View.hxx>
 #include <V3d_Viewer.hxx>
 #include <V3d_Light.hxx>
 #include <V3d_ListOfLight.hxx>
-
-#include <Quantity_Parameter.hxx>
+#include <ViewerTest.hxx>
 
 #include <set>
-
-#include <Utils.hxx>
-#include <AisMesh.hxx>
-#include <DataContext.hxx>
 
 // Returns AIS context.
 extern Handle (AIS_InteractiveContext)& TheAISContext ();
@@ -157,7 +152,7 @@ static int RTMeshRead (Draw_Interpretor& /*theDI*/, int theNbArgs, const char** 
     }
   };
 
-  Handle (mesh::MeshImporter) aMeshImporter = new mesh::MeshImporter;
+  Handle (mesh::MeshImporter) aMeshImporter = new mesh::MeshImporter();
 
   if (theNbArgs < 3 || theNbArgs > 11)
   {
@@ -812,9 +807,9 @@ static int RTLight (Draw_Interpretor& /*theDI*/, int theNbArgs, const char** the
 
         if (aFlag == "-color")
         {
-          Quantity_Parameter aColorR;
-          Quantity_Parameter aColorG;
-          Quantity_Parameter aColorB;
+          double aColorR = 0.0;
+          double aColorG = 0.0;
+          double aColorB = 0.0;
 
           if (theNbArgs == ++anArgIdx || !TCollection_AsciiString (theArgs[anArgIdx]).IsRealValue ())
           {

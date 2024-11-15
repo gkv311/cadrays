@@ -13,7 +13,8 @@
 
 #include <imgui.h>
 
-#include <GuiBase.hxx>
+#include "GuiBase.hxx"
+
 #include <AIS_InteractiveContext.hxx>
 
 class AppViewer;
@@ -35,11 +36,11 @@ public:
 
 protected:
 
-  GuiBase* myMainGui;
+  GuiBase* myMainGui = nullptr;
 
 public:
 
-  bool IsVisible;
+  bool IsVisible = true;
 
 };
 

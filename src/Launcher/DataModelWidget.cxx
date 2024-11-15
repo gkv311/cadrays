@@ -8,17 +8,18 @@
 // refer to file LICENSE.txt for complete text of the license and disclaimer of 
 // any warranty.
 
-#include <set>
-#include <functional>
+#include "DataModelWidget.hxx"
 
-#include <DataModel.hxx>
-#include <DataContext.hxx>
+#include "DataModel.hxx"
+#include "DataContext.hxx"
 
-#include <ImportExport.hxx>
-#include <DataModelWidget.hxx>
+#include "ImportExport.hxx"
 
 #include "tinyfiledialogs.h"
 #include "IconsFontAwesome.h"
+
+#include <set>
+#include <functional>
 
 //=======================================================================
 //function : DataModelWidget

@@ -8,11 +8,9 @@
 // refer to file LICENSE.txt for complete text of the license and disclaimer of 
 // any warranty.
 
-#include <Utils.hxx>
-#include <AisMesh.hxx>
+#include "Utils.hxx"
 
-#include <AIS_DisplayMode.hxx>
-#include <AIS_InteractiveObject.hxx>
+#include "AisMesh.hxx"
 
 #include <Prs3d_ShadingAspect.hxx>
 

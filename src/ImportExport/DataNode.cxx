@@ -8,23 +8,22 @@
 // refer to file LICENSE.txt for complete text of the license and disclaimer of 
 // any warranty.
 
-#include <stack>
-#include <queue>
+#include "DataNode.hxx"
 
-#include <algorithm>
-
-#include <Utils.hxx>
-#include <DataNode.hxx>
-#include <DataContext.hxx>
+#include "Utils.hxx"
+#include "DataContext.hxx"
 
 #include <AIS_Shape.hxx>
 #include <AIS_TexturedShape.hxx>
-
 #include <BRep_Builder.hxx>
+#include <Prs3d_ShadingAspect.hxx>
 #include <Standard_Type.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_MapOfShape.hxx>
-#include <Prs3d_ShadingAspect.hxx>
+
+#include <algorithm>
+#include <stack>
+#include <queue>
 
 // Returns AIS context.
 extern Handle (AIS_InteractiveContext)& TheAISContext ();
@@ -83,20 +82,17 @@ namespace model
   TCollection_AsciiString DataNode::correctName (const TCollection_AsciiString& theName)
   {
     TCollection_AsciiString aName = theName;
-
     if (DataContext::GetInstance ()->IsNameReserved (aName) || aName.EndsWith ("_"))
     {
       for (int aNodeIdx = 1, aMaxAttempts = 1024; aNodeIdx < aMaxAttempts; /* none */)
       {
         aName = theName;
-
         if (!aName.EndsWith ("_"))
         {
           aName += "_";
         }
 
         aName += TCollection_AsciiString (aNodeIdx);
-
         if (!DataContext::GetInstance ()->IsNameReserved (aName))
         {
           break;
@@ -141,7 +137,6 @@ namespace model
     // Note: since the names should be unique in
     // the DRAW, we resolve potential collisions
     myName = correctName (theName);
-
     if (myObject.IsNull ())
     {
       DataContext::GetInstance ()->ReserveName (myName);
@@ -167,7 +162,6 @@ namespace model
   void DataNode::Traverse (NodeProcessor& theProcessor)
   {
     std::queue<DataNode*> aQueue;
-
     for (aQueue.push (this); !aQueue.empty ();)
     {
       DataNode* aNode = aQueue.front ();
@@ -215,12 +209,10 @@ namespace model
                                const float theScaleT)
   {
     bool wasParametrized = false;
-
     if (myObject.IsNull () || myType != DataNode_Type_CadShape)
     {
       return wasParametrized; // do not generate UV for meshes
     }
-
     if (!myObject->IsKind (STANDARD_TYPE (AIS_Shape)))
     {
       Standard_ASSERT_INVOKE ("Error! Failed to parametrize unknown AIS object");
@@ -235,7 +227,6 @@ namespace model
     if (wasParametrized)
     {
       Handle (AIS_TexturedShape) aTexShape = new AIS_TexturedShape (Handle (AIS_Shape)::DownCast (myObject)->Shape ());
-
       if (myObject->HasTransformation ())
       {
         aTexShape->SetLocalTransformation (myObject->LocalTransformation ());
@@ -256,12 +247,10 @@ namespace model
     else
     {
       Handle (AIS_TexturedShape) aTexShape = Handle (AIS_TexturedShape)::DownCast (myObject);
-
       if (aTexShape->TextureScaleU () != theScaleS
        || aTexShape->TextureScaleV () != theScaleT)
       {
         aTexShape->SetTextureScale (Standard_True, theScaleS, theScaleT);
-
         if (aTexShape->DisplayMode () == 3)
         {
           TheAISContext ()->RecomputePrsOnly (aTexShape, Standard_False);
@@ -410,7 +399,6 @@ namespace model
 
     bool hasAny = false;
     bool hasNot = false;
-
     for (size_t aSubIdx = 0; aSubIdx < mySubNodes.size (); ++aSubIdx)
     {
       const NodeState aState = mySubNodes[aSubIdx]->IsVisible ();
@@ -449,11 +437,9 @@ namespace model
 
     bool hasAny = false;
     bool hasNot = false;
-
     for (size_t aSubIdx = 0; aSubIdx < mySubNodes.size (); ++aSubIdx)
     {
       const NodeState aState = mySubNodes[aSubIdx]->IsSelected ();
-
       if (aState == DataNode_State_Part)
       {
         return DataNode_State_Part;
@@ -461,7 +447,6 @@ namespace model
       else
       {
         (aState == DataNode_State_None ? hasNot : hasAny) = true;
-
         if (theEarlyExit && hasNot)
         {
           return DataNode_State_None;
@@ -484,14 +469,12 @@ namespace model
     }
 
     Handle (AIS_Shape) aShape = Handle (AIS_Shape)::DownCast (myObject);
-
     if (aShape.IsNull())
     {
       Standard_ASSERT_INVOKE ("Invalid interactive object found");
     }
 
     size_t aNbFaces = 0;
-
     for (TopExp_Explorer aTopoExp (aShape->Shape (), TopAbs_FACE); aTopoExp.More (); aTopoExp.Next ())
     {
       if (++aNbFaces > 1)
@@ -515,9 +498,7 @@ namespace model
     }
 
     Handle (AIS_Shape) aShape = Handle (AIS_Shape)::DownCast (myObject);
-
     int aNbChildren = 1; // index of sub-shape for naming
-
     for (TopoDS_Iterator aTopIt (aShape->Shape ()); aTopIt.More (); aTopIt.Next (), ++aNbChildren)
     {
       if (aTopIt.Value ().ShapeType () >= TopAbs_WIRE)
@@ -526,17 +507,13 @@ namespace model
       }
 
       Handle (AIS_Shape) aSubShape = new AIS_Shape (aTopIt.Value ());
-
       if (Graphic3d_AspectFillArea3d* aGraphicAspect = GetAspect (aShape))
       {
         aSubShape->SetMaterial (aGraphicAspect->FrontMaterial ());
       }
-
-      const Handle (Geom_Transformation)& aLocalTransform = aShape->LocalTransformationGeom ();
-
-      if (!aLocalTransform.IsNull ())
+      if (!aShape->LocalTransformationGeom ().IsNull ())
       {
-        aSubShape->SetLocalTransformation (aLocalTransform->Trsf ());
+        aSubShape->SetLocalTransformation (aShape->LocalTransformationGeom ()->Trsf ());
       }
 
       // Note: here we suggest simple name for sub-shape
@@ -547,14 +524,12 @@ namespace model
     }
 
     const bool wasVisisble = IsVisible () != DataNode_State_None;
-
     if (mySubNodes.empty ())
     {
       Standard_ASSERT_INVOKE ("Error! Failed to explode the CAD shape");
     }
 
     resetObject ();
-
     if (wasVisisble)
     {
       Show (true /* recursive */, false /* update viewer */);
@@ -583,8 +558,6 @@ namespace model
   //=======================================================================
   bool DataNode::Compose (const bool theSelectedOnly)
   {
-    BRep_Builder aBuilder;
-
     if (!IsComposable ())
     {
       return false; // no objects to compose
@@ -599,7 +572,6 @@ namespace model
     };
 
     DataNodeArray::iterator aLastNode = mySubNodes.end ();
-
     if (theSelectedOnly) // compose selected sub-nodes only
     {
       aLastNode = std::stable_partition (mySubNodes.begin (), mySubNodes.end (), ComposeFilter ());
@@ -615,30 +587,26 @@ namespace model
       (*aNode)->Compose ();
     }
 
+    BRep_Builder aBuilder;
     TopoDS_Compound aCompound; // resulting shape
-
     aBuilder.MakeCompound (aCompound);
 
     bool hasVisible = false; // has visible sub-shapes
 
     Graphic3d_AspectFillArea3d* aGraphicAspect = NULL;
-
     for (auto aNode = mySubNodes.begin (); aNode != aLastNode; ++aNode)
     {
       Handle (AIS_Shape) aSubShape = Handle (AIS_Shape)::DownCast ((*aNode)->Object ());
-
       if (aSubShape.IsNull ())
       {
         Standard_ASSERT_INVOKE ("Error! Invalid state of child data node");
       }
-
       if (aGraphicAspect == NULL)
       {
         aGraphicAspect = GetAspect (aSubShape);
       }
 
       aBuilder.Add (aCompound, aSubShape->Shape ());
-
       if (!hasVisible)
       {
         hasVisible = (*aNode)->IsVisible () != DataNode_State_None;
@@ -646,14 +614,12 @@ namespace model
     }
 
     Handle(AIS_Shape) aComposedShape = new AIS_Shape (aCompound);
-
     if (aGraphicAspect != NULL)
     {
       aComposedShape->SetMaterial (aGraphicAspect->FrontMaterial ());
     }
 
     mySubNodes.erase (mySubNodes.begin (), aLastNode);
-
     if (mySubNodes.empty ())
     {
       // Initialize the object with new composed
@@ -661,7 +627,6 @@ namespace model
       myObject = aComposedShape;
 
       DataContext::GetInstance ()->RebindObject (myName, myObject);
-
       if (hasVisible)
       {
         Show (); // show object if children were visible
@@ -672,7 +637,6 @@ namespace model
       // Create new AIS object for compound sub-shapes and
       // bind it to the new name produced from parent name
       DataNodePtr aComposedNode (new DataNode (aComposedShape, myName));
-
       if (hasVisible)
       {
         aComposedNode->Show (); // show object if children were visible

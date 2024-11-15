@@ -13,10 +13,10 @@
 
 #include <imgui.h>
 
-#include <GuiPanel.hxx>
+#include "GuiPanel.hxx"
 
-#include <V3d_View.hxx>
 #include <AIS_InteractiveContext.hxx>
+#include <V3d_View.hxx>
 
 class AppViewer;
 

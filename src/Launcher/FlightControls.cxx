@@ -10,11 +10,11 @@
 
 #include "FlightControls.h"
 
-#include <algorithm>
-
 #include <gp_Quaternion.hxx>
 #include <gp_Ax1.hxx>
 #include <gp_Ax3.hxx>
+
+#include <algorithm>
 
 enum FlightControls_State
 {
@@ -33,36 +33,29 @@ struct FlightControls_Internal
     : Camera (theCamera),
       ScreenWidth (theScreenWidth),
       ScreenHeight (theScreenHeight),
-      Enabled (true),
-      State (OCS_NONE),
-      MouseLastPos (0, 0),
-      MoveForward (false),
-      MoveBackward (false),
-      MoveLeft (false),
-      MoveRight (false),
-      MoveSpeed (1.f)
+      MouseLastPos (0, 0)
   {}
 
   // Reference to camera.
   Handle (Graphic3d_Camera) Camera;
 
-  int ScreenWidth;
-  int ScreenHeight;
+  int ScreenWidth = 0;
+  int ScreenHeight = 0;
 
-  bool Enabled;
+  bool Enabled = true;
 
-  FlightControls_State State;
+  FlightControls_State State = OCS_NONE;
 
   Graphic3d_Vec2i MouseLastPos;
 
   Graphic3d_Vec3 Translation;
 
-  bool MoveForward;
-  bool MoveBackward;
-  bool MoveLeft;
-  bool MoveRight;
+  bool MoveForward = false;
+  bool MoveBackward = false;
+  bool MoveLeft = false;
+  bool MoveRight = false;
 
-  float MoveSpeed;
+  float MoveSpeed = 1.0f;
 
   void Rotate (const gp_Vec theAngles, const gp_Pnt theCenter);
   void Rotate (const int theDx, const int theDy);
@@ -175,7 +168,6 @@ void FlightControls_Internal::PanForward (const float theDistance)
                                  (float) Camera->Direction().Y(),
                                  (float) Camera->Direction().Z()) * theDistance;
 }
-
 
 //=======================================================================
 //function : FlightControls

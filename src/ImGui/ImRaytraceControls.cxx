@@ -21,7 +21,7 @@
 #include <AIS_InteractiveContext.hxx>
 #include <Prs3d_ShadingAspect.hxx>
 #include <Graphic3d_MaterialAspect.hxx>
-#include <OpenGl_Vec.hxx>
+#include <Graphic3d_Vec.hxx>
 #include <TopLoc_Location.hxx>
 #include <V3d_Light.hxx>
 #include <V3d_DirectionalLight.hxx>
@@ -57,10 +57,10 @@ namespace ImGui
     int aSelectedNum = theAISContext->NbSelected();
     for (theAISContext->InitSelected(); theAISContext->MoreSelected(); theAISContext->NextSelected(), aSelectedNum--)
     {
-      OpenGl_Mat4 aMat;
+      Graphic3d_Mat4 aMat;
       theAISContext->SelectedInteractive()->LocalTransformation().GetMat4(aMat);
 
-      OpenGl_Mat4 aDeltaMap;
+      Graphic3d_Mat4 aDeltaMap;
       ImGuizmo::Manipulate(theView->Camera()->OrientationMatrixF().GetData(),
         theView->Camera()->ProjectionMatrixF().GetData(),
         (ImGuizmo::OPERATION) theOperation, ImGuizmo::WORLD,
@@ -92,11 +92,9 @@ namespace ImGui
 
   IMGUI_API void DrawLights (Handle(AIS_InteractiveContext) theAISContext, Handle(V3d_View) theView)
   {
-    theView->InitActiveLights();
-    for (V3d_ListOfLightIterator aLightIter (theView->ActiveLightIterator()); aLightIter.More(); aLightIter.Next())
+    for (const Handle(V3d_Light)& aLightIter : theView->ActiveLights())
     {
-      Handle(V3d_Light) aCurrentLight = aLightIter.Value();
-
+      Handle(V3d_Light) aCurrentLight = aLightIter;
       if (aCurrentLight->Type() == V3d_POSITIONAL)
       {
         Handle(V3d_PositionalLight) aLightPositional = Handle(V3d_PositionalLight)::DownCast (aCurrentLight);

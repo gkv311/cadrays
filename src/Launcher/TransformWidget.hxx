@@ -13,7 +13,7 @@
 
 #include <imgui.h>
 
-#include <GuiPanel.hxx>
+#include "GuiPanel.hxx"
 
 //! Widget providing transformation controls.
 class TransformWidget: public GuiPanel

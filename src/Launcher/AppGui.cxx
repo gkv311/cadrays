@@ -8,38 +8,33 @@
 // refer to file LICENSE.txt for complete text of the license and disclaimer of 
 // any warranty.
 
-#include <AppGui.hxx>
+#include "AppGui.hxx"
 
-#include <ViewerTest.hxx>
-#include <ViewerTest_DoubleMapOfInteractiveAndName.hxx>
-#include <ViewerTest_DoubleMapIteratorOfDoubleMapOfInteractiveAndName.hxx>
-#include <ViewerTest_EventManager.hxx>
 #include <AIS_InteractiveContext.hxx>
 #include <Draw_PluginMacro.hxx>
-#include <OSD_Path.hxx>
-#include <OSD_Directory.hxx>
-#include <OSD_Protection.hxx>
-#include <OSD_File.hxx>
-#include <OSD_Timer.hxx>
-
+#include <Image_AlienPixMap.hxx>
 #include <OpenGl_View.hxx>
+#include <OSD_Directory.hxx>
+#include <OSD_File.hxx>
+#include <OSD_Path.hxx>
+#include <OSD_Protection.hxx>
+#include <OSD_Timer.hxx>
+#include <Prs3d_ShadingAspect.hxx>
+#include <Standard_Version.hxx>
+#include <V3d_Viewer.hxx>
+#include <V3d_View.hxx>
+#include <ViewerTest.hxx>
+#include <ViewerTest_DoubleMapOfInteractiveAndName.hxx>
+#include <ViewerTest_EventManager.hxx>
 
 #include <GL/glu.h>
 
 #include <stdio.h>
 #include <algorithm>
 
-#include <imgui.h>
+#include "imgui.h"
 
-#include <Prs3d_ShadingAspect.hxx>
-#include <V3d_Viewer.hxx>
-#include <V3d_View.hxx>
-#include <AIS_InteractiveContext.hxx>
-#include <Image_AlienPixMap.hxx>
-
-#include <ImRaytraceControls.h>
-
-#include <Standard_Version.hxx>
+#include "ImRaytraceControls.h"
 
 #include "Version.hxx"
 
@@ -55,9 +50,9 @@
 #include "OrbitControls.h"
 #include "FlightControls.h"
 
-#include <ImportExport.hxx>
+#include "ImportExport.hxx"
 
-#include <Settings.hxx>
+#include "Settings.hxx"
 
 #include "IconsFontAwesome.h"
 
@@ -337,7 +332,7 @@ void AppGui::Draw (AIS_InteractiveContext* theAISContext, V3d_View* theView, boo
     if (toSave)
     {
       Image_AlienPixMap aPixMap;
-      Image_PixMap::ImgFormat aFormat = Image_PixMap::ImgRGB;
+      Image_Format aFormat = Image_Format_RGB;
       Graphic3d_BufferType aBufferType = Graphic3d_BT_RGB;
       
       static int aLogoPos = 0;
@@ -345,7 +340,7 @@ void AppGui::Draw (AIS_InteractiveContext* theAISContext, V3d_View* theView, boo
       if (anExt == ".exr" || anExt == ".hdr")
       {
         // dump HDR image
-        aFormat = Image_PixMap::ImgRGBF;
+        aFormat = Image_Format_RGBF;
         aBufferType = Graphic3d_BT_RGB_RayTraceHdrLeft;
       }
       else
@@ -357,7 +352,7 @@ void AppGui::Draw (AIS_InteractiveContext* theAISContext, V3d_View* theView, boo
           ImGui::OpenPopup ("Insert logo##Dialog");
 
           // dump LDR image
-          aFormat = Image_PixMap::ImgRGB;
+          aFormat = Image_Format_RGB;
           aBufferType = Graphic3d_BT_RGB;
 
           aLogoPos = 0;

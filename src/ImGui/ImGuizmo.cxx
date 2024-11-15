@@ -1760,8 +1760,8 @@ void Manipulate (const float* view, const float* projection, OPERATION operation
   }
 
   ImDrawList* drawList = gContext.mDrawList;
-  drawList->PushClipRect (ImVec2 (gContext.mScreenPosX, gContext.mScreenPosY),
-                          ImVec2 (gContext.mScreenPosX + gContext.mScreenWidth, gContext.mScreenPosY + gContext.mScreenHeight));
+  drawList->PushClipRect (ImVec2 (float(gContext.mScreenPosX), float(gContext.mScreenPosY)),
+                          ImVec2 (float(gContext.mScreenPosX + gContext.mScreenWidth), float(gContext.mScreenPosY + gContext.mScreenHeight)));
 
   switch (operation)
   {

@@ -11,7 +11,7 @@
 #ifndef _RT_DataModel_HeaderFile
 #define _RT_DataModel_HeaderFile
 
-#include <DataNode.hxx>
+#include "DataNode.hxx"
 
 namespace model
 {

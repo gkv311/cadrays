@@ -13,19 +13,22 @@
 #endif
 
 #include <tcl.h>
-#include <iostream>
 
-#include <Draw_Interpretor.hxx>
 #include <Draw.hxx>
+#include <Draw_Interpretor.hxx>
 #include <DBRep.hxx>
 #include <DrawTrSurf.hxx>
-#include <ViewerTest.hxx>
-#include <TCollection_AsciiString.hxx>
+#include <OSD_Environment.hxx>
 #include <OSD_File.hxx>
+#include <OSD_Process.hxx>
+#include <TCollection_AsciiString.hxx>
+#include <ViewerTest.hxx>
 
-#include <AppGui.hxx>
-#include <AppViewer.hxx>
-#include <OrbitControls.h>
+#include "AppGui.hxx"
+#include "AppViewer.hxx"
+#include "OrbitControls.h"
+
+#include <iostream>
 
 Standard_IMPORT Draw_Interpretor theCommands;
 
@@ -54,50 +57,36 @@ int main (int argc, char const *argv[])
 
   Tcl_Init (aDI.Interp());
 
-  TCollection_AsciiString aCascadeDir = CASROOT_DIR;
-  aCascadeDir.ChangeAll ('\\', '/');
-  TCollection_AsciiString aDataDir = "../../../data/";
+  const TCollection_AsciiString anExeDir = OSD_Process::ExecutableFolder();
 
-  OSD_Path anInstallFlagPath (".cadrays-installed");
-  OSD_File aFile (anInstallFlagPath);
-
-  if (aFile.Exists())
+  OSD_Environment anEnvCasroot("CASROOT");
+  OSD_Environment anEnvAppData("APP_DATA");
+  TCollection_AsciiString aCascadeDir = anEnvCasroot.Value();
+  TCollection_AsciiString aDataDir = anEnvAppData.Value();
+  if (OSD_File (anExeDir + "/occt-tcl/src/DrawResources/DrawDefault").Exists())
   {
-    aDataDir = "data/";
-    aCascadeDir = "occt-tcl/";
+    aCascadeDir = anExeDir + "/occt-tcl/";
+    aCascadeDir.ChangeAll ('\\', '/');
+    aDataDir = anExeDir + "/data/";
+
+    anEnvCasroot.SetValue (aCascadeDir);
+    anEnvCasroot.Build();
+
+    Tcl_PutEnv ((TCollection_AsciiString ("CASROOT=") + aCascadeDir).ToCString());
+    Tcl_PutEnv ((TCollection_AsciiString ("APP_DATA=") + aDataDir).ToCString());
   }
-
-#ifdef _WIN32
-  putenv (const_cast<char*> ((TCollection_AsciiString ("CASROOT=") + aCascadeDir).ToCString()));
-#else
-  setenv("CASROOT", aCascadeDir.ToCString(), 1);
-#endif
-  Tcl_PutEnv ((TCollection_AsciiString ("CASROOT=") + aCascadeDir).ToCString());
-
-  Tcl_PutEnv ((TCollection_AsciiString ("APP_DATA=") + aDataDir).ToCString());
 
   Draw::BasicCommands (aDI);
   DBRep::BasicCommands (aDI);
   DrawTrSurf::BasicCommands (aDI);
 
-  TCollection_AsciiString aDefStr (getenv ("CASROOT"));
-  aDefStr += "/src/DrawResources/DrawDefault";
+  TCollection_AsciiString aDefStr = aCascadeDir + "/src/DrawResources/DrawDefault";
   ReadInitFile (aDefStr, aDI);
 
   aDI.Eval ("proc reopenStdout {file} { close stdout; open $file w; }");
 
   aDI.Eval ("pload ALL");
-
-  TCollection_AsciiString aDefDir = aDataDir;
-  TCollection_AsciiString aUserDefDir;
-
-  Draw::Load (aDI, "ImportExport", "DrawPlugin", aDefDir, aUserDefDir);
-
-  //Draw::Load(aDI, "TOPTEST", "DrawPlugin1", aDefDir, aUserDefDir);
-  //Draw::Load(aDI, "DCAF", "DrawPlugin2", aDefDir, aUserDefDir);
-  //Draw::Load(aDI, "XSDRAW", "DrawPlugin3", aDefDir, aUserDefDir);
-  //Draw::Load(aDI, "XDEDRAW", "DrawPlugin4", aDefDir, aUserDefDir);
-  //Draw::Load(aDI, "AISV", "DrawPlugin5", aDefDir, aUserDefDir);
+  aDI.Eval ("pload -CadraysDrawTest");
 
   // Application init
   AppViewer aViewer ("CADRays", aDataDir.ToCString(), 1900, 1000);
@@ -153,14 +142,12 @@ int main (int argc, char const *argv[])
   aViewer.LoadTextureFromFile("LogoC", "logo/logo_c.png");
 
 #if defined (_WIN32)
- HWND aHiddenConsole;
  AllocConsole();
- aHiddenConsole = GetConsoleWindow();
+ HWND aHiddenConsole = GetConsoleWindow();
  ShowWindow (aHiddenConsole, 0);
 #endif
-  
+
   bool aRunScriptFromTheCommandLine = false;
-  
   if (argc > 1)
   {
     TCollection_AsciiString aDir (argv[1]);
@@ -168,13 +155,11 @@ int main (int argc, char const *argv[])
     anExt.UpperCase();
 
     std::ifstream aScriptFile (argv[1]);
-
     if (aScriptFile.is_open() && anExt == ".TCL")
     {
       std::string aContent((std::istreambuf_iterator<char>(aScriptFile)),
                            (std::istreambuf_iterator<char>()));
       aScriptFile.close();
-
       if (argc > 2)
       {
         aViewer.SetScript (aContent, atoi(argv[2]));
@@ -189,13 +174,11 @@ int main (int argc, char const *argv[])
   }
   
   aViewer.Run();
-
   if (aRunScriptFromTheCommandLine)
   {
     TCollection_AsciiString aDir (argv[1]);
     OSD_Path aPath (aDir);
     TCollection_AsciiString anOutputFileName = aPath.Disk();
-
     for (int aTrekIdx = 1; aTrekIdx <= aPath.TrekLength(); ++aTrekIdx)
     {
       if (!anOutputFileName.IsEmpty())

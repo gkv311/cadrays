@@ -11,7 +11,7 @@
 #ifndef _MaterialEditor_HeaderFile
 #define _MaterialEditor_HeaderFile
 
-#include <GuiPanel.hxx>
+#include "GuiPanel.hxx"
 
 class AppViewer;
 

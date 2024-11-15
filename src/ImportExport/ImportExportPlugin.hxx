@@ -11,9 +11,6 @@
 #ifndef _ImportExport_DrawPlug_HeaderFile
 #define _ImportExport_DrawPlug_HeaderFile
 
-#include <Standard_Handle.hxx>
-#include <Standard_DefineAlloc.hxx>
-
 #include <Draw_Interpretor.hxx>
 
 //! Interface to import-export plug-in.

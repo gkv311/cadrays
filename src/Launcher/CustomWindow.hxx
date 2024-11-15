@@ -11,7 +11,6 @@
 
 #include <WNT_Window.hxx>
 #include <Xw_Window.hxx>
-#include <Quantity_Ratio.hxx>
 
 #if defined(_WIN32) && !defined(OCCT_UWP)
 
@@ -33,7 +32,7 @@ public:
   
   //! Returns The Window RATIO equal to the physical
   //! WIDTH/HEIGHT dimensions.
-  Standard_EXPORT virtual Quantity_Ratio Ratio() const Standard_OVERRIDE;
+  Standard_EXPORT virtual double Ratio() const Standard_OVERRIDE;
   
   //! Returns The Window POSITION in PIXEL
   Standard_EXPORT virtual void Position (Standard_Integer& X1, Standard_Integer& Y1, Standard_Integer& X2, Standard_Integer& Y2) const Standard_OVERRIDE;
@@ -45,8 +44,8 @@ public:
 
 protected:
 
-  Standard_Integer XSize;
-  Standard_Integer YSize;
+  Standard_Integer XSize = 0;
+  Standard_Integer YSize = 0;
 };
 
 #else // _WIN32
@@ -70,7 +69,7 @@ public:
   
   //! Returns The Window RATIO equal to the physical
   //! WIDTH/HEIGHT dimensions.
-  Standard_EXPORT virtual Quantity_Ratio Ratio() const Standard_OVERRIDE;
+  Standard_EXPORT virtual double Ratio() const Standard_OVERRIDE;
   
   //! Returns The Window POSITION in PIXEL
   Standard_EXPORT virtual void Position (Standard_Integer& X1, Standard_Integer& Y1, Standard_Integer& X2, Standard_Integer& Y2) const Standard_OVERRIDE;
@@ -82,8 +81,8 @@ public:
 
 protected:
 
-  Standard_Integer XSize;
-  Standard_Integer YSize;
+  Standard_Integer XSize = 0;
+  Standard_Integer YSize = 0;
 };
 
 #endif // _WIN32

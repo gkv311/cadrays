@@ -9,13 +9,13 @@
 // any warranty.
 
 #include "DataModel.hxx"
+
 #include "DataContext.hxx"
 
-#include <AIS_Shape.hxx>
 #include <AIS_TexturedShape.hxx>
-
 #include <ViewerTest_DoubleMapOfInteractiveAndName.hxx>
-#include <ViewerTest_DoubleMapIteratorOfDoubleMapOfInteractiveAndName.hxx>
+
+#include <algorithm>
 
 //! Returns map of AIS objects.
 extern ViewerTest_DoubleMapOfInteractiveAndName& GetMapOfAIS ();

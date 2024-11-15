@@ -239,7 +239,7 @@ namespace ImGui
     if (!useImage)
       RenderTextClipped(bb.Min, bb.Max, label, NULL, &label_size, ImGuiAlign_Center | ImGuiAlign_VCenter);
     else
-      window->DrawList->AddImage((void*)imageId, image_bb.Min, image_bb.Max, ImVec2(0,0), ImVec2(1,1), GetColorU32(ImVec4(1,1,1,1)));
+      window->DrawList->AddImage((void*)intptr_t(imageId), image_bb.Min, image_bb.Max, ImVec2(0,0), ImVec2(1,1), GetColorU32(ImVec4(1,1,1,1)));
 
     return pressed;
   }
@@ -293,7 +293,7 @@ namespace ImGui
     ImVec2 image_min (roundf (pos.x + image_spacing.x), roundf (pos.y + image_spacing.y));
     const ImRect image_bb (image_min,
                            image_min + ImVec2 (roundf (64.f * aScale), roundf (64.f * aScale)));
-    window->DrawList->AddImage((void*)(theTexture), image_bb.Min, image_bb.Max, ImVec2(0,0), ImVec2(1,1), GetColorU32(ImVec4(1,1,1,1)));
+    window->DrawList->AddImage((void*)intptr_t(theTexture), image_bb.Min, image_bb.Max, ImVec2(0,0), ImVec2(1,1), GetColorU32(ImVec4(1,1,1,1)));
 
     SetItemAllowOverlap();
 
